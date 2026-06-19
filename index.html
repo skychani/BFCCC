@@ -64,6 +64,7 @@ body{ margin:0; font-family:var(--font); }
 .tab-panel.active{ display:block; }
 
 .cols-2{ display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem; }
+.cols-2 > .panel{ min-width:0; }
 @media (max-width: 1000px){ .cols-2{ grid-template-columns:1fr; } }
 
 .panel{
@@ -120,6 +121,15 @@ body{ margin:0; font-family:var(--font); }
 .nf-suffix{ font-size:.74rem; color:var(--slate-light); font-weight:600; white-space:nowrap; padding-left:.4rem; }
 .nf-hint{ font-size:.7rem; color:var(--slate-faint); line-height:1.5; }
 
+.nf-price-row{ display:flex; gap:.5rem; align-items:stretch; }
+.nf-price-main{ flex:1; min-width:0; }
+.nf-year-select{
+  flex-shrink:0; width:5rem; font-family:var(--font); font-size:.82rem; font-weight:600;
+  color:var(--copper-deep); background:#fffdfb; border:1.5px solid var(--copper);
+  border-radius:6px; padding:0 .4rem; cursor:pointer; outline:none;
+}
+.nf-year-select:focus{ box-shadow:0 0 0 3px rgba(189,107,62,0.14); }
+
 .chain{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.9rem; }
 .chain-step{
   display:flex; gap:1rem; padding:1rem 1.1rem; border:1px solid var(--line);
@@ -149,6 +159,7 @@ body{ margin:0; font-family:var(--font); }
 .chain-sub{ font-size:.74rem; color:var(--slate-light); margin:.35rem 0 0; }
 
 .kpi-grid{ display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:1.7rem; }
+.kpi-grid > .kpi{ min-width:0; }
 .kpi{
   background:var(--navy); color:#fff; border-radius:8px; padding:1rem 1.1rem;
   display:flex; flex-direction:column; gap:.35rem; position:relative;
@@ -244,6 +255,7 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
 
 /* ── Overview tab: cards ── */
 .ov-grid{ display:grid; grid-template-columns: 1.35fr 1fr; gap:1.2rem; align-items:start; }
+.ov-grid > *{ min-width:0; }
 @media (max-width: 1100px){ .ov-grid{ grid-template-columns:1fr; } }
 .ov-card{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:1.5rem 1.6rem; }
 .ov-section-title{
@@ -351,6 +363,95 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
   max-width:1680px; margin:2.5rem auto 0; padding:1.3rem 2.2rem 0; font-size:.74rem;
   color:var(--slate-faint); line-height:1.7; border-top:1px solid var(--line);
 }
+
+/* ═══════════════════════════════════════════════════════
+   모바일 반응형
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 768px){
+  .hero{ padding:1.6rem 1rem 0; }
+  .hero h1{ font-size:1.5rem; }
+  .hero-sub{ font-size:.84rem; margin-bottom:1.2rem; }
+  .hero-eyebrow{ font-size:.62rem; letter-spacing:.08em; }
+  .hero-eyebrow-sub{ display:block; margin-top:.2rem; font-size:.85em; }
+
+  /* 탭바: 가로 스크롤 허용, 균등폭 */
+  .tabs{
+    overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    margin:0 -1rem; padding:0 1rem;
+  }
+  .tabs::-webkit-scrollbar{ display:none; }
+  .tab-btn{
+    flex:1 0 auto; padding:.75rem .6rem; font-size:.76rem; white-space:nowrap;
+    justify-content:center;
+  }
+  .tab-num{ width:1.1rem; height:1.1rem; font-size:.6rem; }
+
+  .tab-panel{ padding:0 1rem; margin-top:1.2rem; }
+
+  .panel{ padding:1.1rem 1rem; border-radius:8px; }
+  .panel-title{ font-size:.9rem; margin-bottom:1rem; }
+
+  .cols-2{ grid-template-columns:1fr; gap:.9rem; }
+
+  .block-highlight{ margin:0 -1rem 1.2rem; padding:1rem 1rem 1.2rem; }
+  .block{ margin-bottom:1.3rem; padding-bottom:1.1rem; }
+
+  .field-row{ grid-template-columns:1fr; gap:.7rem; }
+  .nf-price-row{ flex-direction:column; gap:.5rem; }
+  .nf-year-select{ width:100%; padding:.5rem .4rem; }
+
+  .cf-live{ flex-direction:column; align-items:flex-start; gap:.6rem; }
+  .cf-live > div:last-child{ text-align:left !important; width:100%; }
+
+  /* 표: 가로 스크롤 컨테이너로 감싼 효과 */
+  table.dtable{ display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; white-space:nowrap; }
+  table.dtable thead, table.dtable tbody{ display:table; width:100%; min-width:560px; }
+  .cell-input.w-name{ min-width:3rem; }
+  .cell-input.w-num{ min-width:4.6rem; }
+  .cell-input.w-count{ width:3.4rem; }
+
+  .kpi-grid{ grid-template-columns:1fr; gap:.6rem; }
+  .kpi{ padding:.85rem 1rem; }
+  .kpi-value{ font-size:1.05rem; }
+
+  .unit-actions{ flex-wrap:wrap; }
+  .btn{ font-size:.7rem; padding:.38rem .65rem; }
+
+  .chain-step{ padding:.85rem .9rem; gap:.7rem; }
+  .chain-num{ width:1.6rem; height:1.6rem; font-size:.72rem; }
+  .chain-body h4{ font-size:.82rem; }
+  .chain-formula{ font-size:.68rem; }
+  .chain-result{ font-size:1.05rem; }
+
+  /* 총괄보기: 요약 스트립 2x2 */
+  .ov-strip{ flex-direction:column; padding:1.1rem 1.2rem; gap:.9rem; }
+  .ov-strip-item{ padding:0; min-width:0; }
+  .ov-strip-div{ width:100%; height:1px; margin:0; }
+  .ov-strip-value{ font-size:1.1rem; }
+
+  .ov-card{ padding:1.1rem 1.1rem; }
+  .ov-bars{ gap:1.2rem; }
+  .ov-bar-stack{ width:90px; }
+  .ov-bar-total{ font-size:1.05rem; }
+  .ov-bar-arrow{ padding-bottom:2rem; }
+  .ov-arrow-icon{ font-size:1.1rem; }
+
+  .ov-house-row-label{ width:3.8rem; font-size:.76rem; }
+  .ov-house-row-nums{ font-size:.78rem; }
+
+  .ov-conclusion{ padding:1.1rem 1.2rem; font-size:.82rem; line-height:1.8; }
+
+  .summary-card{ padding:1rem 1.1rem; }
+
+  .foot{ padding:1rem 1rem 0; font-size:.7rem; }
+}
+
+@media (max-width: 420px){
+  .hero h1{ font-size:1.3rem; }
+  .tab-btn{ padding:.7rem .4rem; font-size:.7rem; }
+  .ov-bar-stack{ width:75px; }
+  .ov-bars{ gap:.8rem; }
+}
 </style>
 </head>
 <body>
@@ -384,16 +485,25 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
           </div>
           <div class="field-row">
             <label class="nf">
-              <span class="nf-label tip" data-tip="해당 시·도 또는 자치구의 재개발 사업 기준 평균 공시지가입니다.">서울시 평균 공시지가</span>
-              <div class="nf-input-wrap nf-accent">
-                <input type="text" inputmode="decimal" id="seoulPrice" placeholder="예: 6,302,982" />
-                <span class="nf-suffix">원/㎡</span>
+              <span class="nf-label tip" data-tip="해당 시·도 또는 자치구의 재개발 사업 기준 평균 공시지가입니다. 매년 갱신되므로 기준연도를 함께 확인하세요.">서울시 평균 공시지가</span>
+              <div class="nf-price-row">
+                <div class="nf-input-wrap nf-accent nf-price-main">
+                  <input type="text" inputmode="decimal" id="seoulPrice" placeholder="예: 6,302,982" />
+                  <span class="nf-suffix">원/㎡</span>
+                </div>
+                <select id="seoulPriceYear" class="nf-year-select" title="공시지가 기준연도">
+                  <option value="2025">2025년</option>
+                  <option value="2024">2024년</option>
+                  <option value="2023">2023년</option>
+                  <option value="2022">2022년</option>
+                  <option value="custom">기타</option>
+                </select>
               </div>
             </label>
             <label class="nf">
               <span class="nf-label tip" data-tip="사업시행구역 내 모든 용도지역 대지(지목)의 면적 가중평균 공시지가입니다.">사업지 평균 공시지가</span>
               <div class="nf-input-wrap nf-accent">
-                <input type="text" inputmode="decimal" id="sitePrice" placeholder="예: 4,161,000" />
+                <input type="text" inputmode="decimal" id="sitePrice" placeholder="예: 4,577,100" />
                 <span class="nf-suffix">원/㎡</span>
               </div>
               <span class="nf-hint">면적 가중평균 기준 · 손실보상 토지환산에도 동일값 적용</span>
@@ -563,7 +673,7 @@ function fmtNum(n, d) {
   return n.toLocaleString("ko-KR", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
 function fmtPctVal(n, d) {
-  d = d === undefined ? 4 : d;
+  d = d === undefined ? 2 : d;
   if (n === null || n === undefined || Number.isNaN(n)) return "—";
   return n.toLocaleString("ko-KR", { minimumFractionDigits: d, maximumFractionDigits: d }) + "%";
 }
@@ -627,6 +737,7 @@ const SIMPLE_FIELD_IDS = [
   "publicLand","infraArea","communityArea","compensationAmt"
 ];
 const SIMPLE_DEFAULTS = {
+  seoulPrice: 6302982, sitePrice: 4577100,
   targetFAR: 250, totalHouseholds: 556,
   publicLand: 528, infraArea: 2032.71, communityArea: 912.67,
   compensationAmt: 6289566541
@@ -760,8 +871,8 @@ function renderChain(calc) {
       "정비기반시설 제공 비율(α)을 반영해 산정한 완화용적률의 계산 기준값입니다."),
     chainStepHTML("4","사업성보정계수",
       "MIN(서울시 평균공시지가 ÷ 사업지 평균공시지가, 1.5)",
-      calc.correctionFactor !== null ? fmtNum(calc.correctionFactor,4) : "공시지가 입력 필요",
-      calc.rawRatio !== null ? "원시 비율 " + fmtNum(calc.rawRatio,4) : null,
+      calc.correctionFactor !== null ? fmtNum(calc.correctionFactor,2) : "공시지가 입력 필요",
+      calc.rawRatio !== null ? "원시 비율 " + fmtNum(calc.rawRatio,2) : null,
       true,
       calc.isCapped ? "상한 1.5 캡 적용됨" : (calc.hasPrices ? "캡 미적용" : null),
       "사업지 공시지가가 서울시 평균보다 낮을수록 값이 커지며, 1.5를 초과할 수 없습니다. 임대주택 의무면적과 용적률 인센티브에 직접 영향을 줍니다."),
@@ -796,10 +907,10 @@ function renderCFLive(calc) {
   }
   el.innerHTML =
     '<div><div class="cf-live-label">산출된 사업성보정계수</div>' +
-    '<div class="cf-live-value num">' + fmtNum(calc.correctionFactor,4) + '</div></div>' +
+    '<div class="cf-live-value num">' + fmtNum(calc.correctionFactor,2) + '</div></div>' +
     '<div style="text-align:right;">' +
     (calc.isCapped ? '<span class="cf-live-flag">상한 1.5 캡 적용</span><br>' : '') +
-    '<span class="cf-live-detail num">원시 비율 ' + fmtNum(calc.rawRatio,4) + ' (' + fmtNum(calc.rawRatio*100,2) + '%)</span>' +
+    '<span class="cf-live-detail num">원시 비율 ' + fmtNum(calc.rawRatio,2) + ' (' + fmtNum(calc.rawRatio*100,2) + '%)</span>' +
     '</div>';
 }
 
@@ -809,11 +920,11 @@ function renderKPI(calc) {
     : (calc.donationDelta < 0 ? "▼ " + Math.abs(calc.donationDelta) + "세대" : "▲ " + calc.donationDelta + "세대");
   const deltaCls = calc.donationDelta === 0 ? "" : (calc.donationDelta < 0 ? "kpi-warn" : "kpi-ok");
   const items = [
-    { label:"보정계수", value: calc.correctionFactor !== null ? fmtNum(calc.correctionFactor,4) : "—",
+    { label:"보정계수", value: calc.correctionFactor !== null ? fmtNum(calc.correctionFactor,2) : "—",
       flag: calc.isCapped ? "CAP 1.5" : null, cls:"",
       tip:"서울시 평균 공시지가 ÷ 사업지 평균 공시지가의 비율로, 1.5를 넘지 않도록 상한이 적용됩니다." },
     { label:"용적률 증감", value: (calc.farBefore !== null && calc.farAfter !== null)
-        ? "▲ " + fmtNum((calc.farAfter-calc.farBefore)*100,4) + "%p" : "—", cls:"",
+        ? "▲ " + fmtNum((calc.farAfter-calc.farBefore)*100,2) + "%p" : "—", cls:"",
       tip:"보정계수 적용 전과 후, 통합심의 총 용적률의 변화 폭입니다." },
     { label:"임대(기부형) 세대 증감", value: deltaText + "  (" + fmtInt(calc.donationPlanTotal) + "→" + fmtInt(calc.donationHouseholdsTotal) + ")", cls: deltaCls,
       tip:"계획(원안) 대비 보정계수를 반영해 현재 입력된 기부형 임대 세대수의 변화입니다." },
@@ -1050,7 +1161,7 @@ function renderOverview(calc) {
     '<div class="ov-strip">' +
       '<div class="ov-strip-item">' +
         '<span class="ov-strip-label">사업성보정계수</span>' +
-        '<span class="ov-strip-value num">' + fmtNum(calc.correctionFactor,4) + '</span>' +
+        '<span class="ov-strip-value num">' + fmtNum(calc.correctionFactor,2) + '</span>' +
         (calc.isCapped ? '<span class="ov-strip-tag">CAP 1.5</span>' : '') +
       '</div>' +
       '<div class="ov-strip-div"></div>' +
@@ -1129,7 +1240,7 @@ function renderOverview(calc) {
 
   const conclusionHTML =
     '<div class="ov-conclusion">' +
-      '<b>결론</b> · 보정계수 <b class="num">' + (calc.correctionFactor!==null?fmtNum(calc.correctionFactor,4):'—') + '</b> 적용 →' +
+      '<b>결론</b> · 보정계수 <b class="num">' + (calc.correctionFactor!==null?fmtNum(calc.correctionFactor,2):'—') + '</b> 적용 →' +
       ' 총 용적률 <span class="hl-blue num">' + fmtPctVal(calc.farBefore*100,2) + ' → ' + fmtPctVal(calc.farAfter*100,2) + '</span>' +
       ' (<span class="hl-blue num">▲' + fmtNum(farDeltaPct,2) + '%p</span>) &nbsp;/&nbsp; ' +
       '임대(기부형) <span class="hl-red num">' + fmtInt(donPlan) + ' → ' + fmtInt(donHouseholds) + '세대 (' + (donDelta<0?'▼':'▲') + Math.abs(donDelta) + ')</span> · ' +
