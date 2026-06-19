@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>사업성보정계수 계산기</title>
+<style>
+:root{
+  --navy:#15202e; --navy-2:#1c2a3d; --ink:#0d1520; --paper:#f4f5f7;
+  --line:#e1e4ea; --line-2:#c7ccd6;
+  --copper:#bd6b3e; --copper-soft:#f3e2d4; --copper-deep:#8f4d29;
+  --ok:#1f7a4d; --ok-soft:#e3f3ea;
+  --warn:#b3361f; --warn-soft:#fae5e1;
+  --slate:#5b6477; --slate-light:#8993a8; --slate-faint:#a6aebc;
+  --font: 'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', '맑은 고딕', 'Malgun Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+*{box-sizing:border-box;}
+body{ margin:0; font-family:var(--font); }
+.app{
+  background:var(--paper); color:var(--ink);
+  min-height:100vh; padding:0 0 4rem;
+  font-feature-settings:'tnum' 1;
+}
+.num{ font-variant-numeric: tabular-nums; }
+
+.hero{
+  background:linear-gradient(160deg, var(--navy) 0%, var(--ink) 100%); color:#fff;
+  padding:2.6rem 2.2rem 0;
+  border-bottom:3px solid var(--copper);
+}
+.hero-top{ max-width:1680px; margin:0 auto; }
+.hero-eyebrow{
+  font-size:.7rem; font-weight:600; letter-spacing:.16em;
+  color:var(--copper); text-transform:uppercase; margin-bottom:.7rem;
+}
+.hero-eyebrow-sub{
+  color:#7c8aa3; font-weight:500; letter-spacing:.02em; text-transform:none; font-size:.95em;
+}
+.hero h1{
+  font-size:2.1rem; font-weight:700; margin:0 0 .55rem;
+  letter-spacing:-.02em;
+}
+.hero-sub{
+  max-width:680px; color:#a7b0c2; font-size:.92rem; line-height:1.65; margin:0 0 1.8rem;
+  font-weight:400;
+}
+
+.tabs{ display:flex; gap:.2rem; max-width:1680px; margin:0 auto; }
+.tab-btn{
+  font-family:var(--font); font-size:.84rem; font-weight:600; color:#8d96a8;
+  background:transparent; border:none; padding:.85rem 1.4rem; cursor:pointer;
+  border-bottom:3px solid transparent; transition:color .15s, border-color .15s;
+  display:flex; align-items:center; gap:.5rem;
+}
+.tab-btn:hover{ color:#cfd5e0; }
+.tab-btn.active{ color:#fff; border-bottom-color:var(--copper); }
+.tab-num{
+  font-size:.65rem; font-weight:700; width:1.3rem; height:1.3rem; border-radius:50%;
+  background:#2a3850; color:#9aa6c2; display:flex; align-items:center; justify-content:center;
+}
+.tab-btn.active .tab-num{ background:var(--copper); color:#fff; }
+
+.tab-panel{ display:none; max-width:1680px; margin:2rem auto 0; padding:0 2.2rem; }
+.tab-panel.active{ display:block; }
+
+.cols-2{ display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem; }
+@media (max-width: 1000px){ .cols-2{ grid-template-columns:1fr; } }
+
+.panel{
+  background:#fff; border:1px solid var(--line); border-radius:10px;
+  padding:1.6rem 1.7rem; align-self:start;
+}
+.panel-title{
+  display:flex; align-items:center; gap:.6rem; font-size:.98rem; font-weight:700;
+  margin:0 0 1.3rem; padding-bottom:.85rem; border-bottom:1.5px solid var(--ink);
+  letter-spacing:-.01em;
+}
+.panel-sub{ font-size:.78rem; color:var(--slate-light); font-weight:400; margin:-.9rem 0 1.2rem; }
+
+.block{ margin-bottom:1.7rem; padding-bottom:1.5rem; border-bottom:1px solid var(--line); }
+.block:last-child{ border-bottom:none; margin-bottom:0; padding-bottom:0; }
+.block-highlight{
+  background:var(--copper-soft); margin:0 -1.7rem 1.7rem; padding:1.3rem 1.7rem 1.5rem;
+  border-bottom:none; border-radius:0;
+}
+.block-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; }
+.block-head h3{ font-size:.86rem; font-weight:700; margin:0; color:var(--navy); letter-spacing:-.01em; }
+.block-tag{ font-size:.68rem; color:var(--copper-deep); font-weight:600; }
+
+.cf-live{
+  margin-top:1.1rem; padding:.85rem 1rem; background:#fff; border:1.5px dashed var(--copper);
+  border-radius:7px; display:flex; align-items:center; justify-content:space-between; gap:.8rem;
+  flex-wrap:wrap;
+}
+.cf-live-empty{ font-size:.8rem; color:var(--slate-light); font-style:italic; }
+.cf-live-label{ font-size:.74rem; color:var(--slate); font-weight:600; }
+.cf-live-value{ font-size:1.45rem; font-weight:700; color:var(--copper-deep); }
+.cf-live-detail{ font-size:.72rem; color:var(--slate-light); }
+.cf-live-flag{
+  font-size:.64rem; font-weight:700; background:var(--copper); color:#fff;
+  padding:.18rem .5rem; border-radius:4px;
+}
+
+.field-row{ display:grid; grid-template-columns:1fr 1fr; gap:.9rem; margin-bottom:.9rem; }
+.field-row:last-child{ margin-bottom:0; }
+.nf{ display:flex; flex-direction:column; gap:.4rem; }
+.nf-label{ font-size:.76rem; color:var(--slate); font-weight:600; }
+.nf-input-wrap{
+  display:flex; align-items:center; background:#fff; border:1.5px solid var(--line-2);
+  border-radius:6px; padding:0 .7rem; transition:border-color .15s, box-shadow .15s;
+}
+.nf-input-wrap:focus-within{ border-color:var(--navy); box-shadow:0 0 0 3px rgba(21,32,46,0.08); }
+.nf-accent .nf-input-wrap{ border-color:var(--copper); border-width:1.5px; background:#fffdfb; }
+.nf-accent .nf-input-wrap:focus-within{ box-shadow:0 0 0 3px rgba(189,107,62,0.14); }
+.nf-input-wrap input{
+  flex:1; border:none; outline:none; padding:.62rem 0; font-family:var(--font);
+  font-size:.94rem; font-weight:500; background:transparent; min-width:0; color:var(--ink);
+  width:100%; text-align:left;
+}
+.nf-suffix{ font-size:.74rem; color:var(--slate-light); font-weight:600; white-space:nowrap; padding-left:.4rem; }
+.nf-hint{ font-size:.7rem; color:var(--slate-faint); line-height:1.5; }
+
+.chain{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.9rem; }
+.chain-step{
+  display:flex; gap:1rem; padding:1rem 1.1rem; border:1px solid var(--line);
+  border-radius:8px; background:#fbfbfc;
+}
+.chain-step-hl{ background:#fff; border-color:var(--navy); border-width:1.5px; box-shadow:0 1px 3px rgba(13,21,32,0.06); }
+.chain-num{
+  flex-shrink:0; width:1.85rem; height:1.85rem; border-radius:50%; background:var(--navy);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:.8rem; font-weight:700;
+}
+.chain-step-hl .chain-num{ background:var(--copper); }
+.chain-body{ flex:1; min-width:0; }
+.chain-title-row{ display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+.chain-body h4{ font-size:.88rem; font-weight:700; margin:0 0 .35rem; color:var(--navy); letter-spacing:-.01em; }
+.chain-badge{
+  font-size:.64rem; background:var(--ok-soft); color:var(--ok);
+  padding:.18rem .5rem; border-radius:4px; white-space:nowrap; font-weight:700;
+}
+.chain-formula{
+  font-size:.74rem; color:var(--slate-light); margin:0 0 .55rem; line-height:1.55; font-weight:400;
+}
+.chain-result{
+  font-size:1.2rem; font-weight:700; color:var(--ink);
+}
+.chain-step-hl .chain-result{ color:var(--copper-deep); }
+.chain-sub{ font-size:.74rem; color:var(--slate-light); margin:.35rem 0 0; }
+
+.kpi-grid{ display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:1.7rem; }
+.kpi{
+  background:var(--navy); color:#fff; border-radius:8px; padding:1rem 1.1rem;
+  display:flex; flex-direction:column; gap:.35rem; position:relative;
+}
+.kpi-label{ font-size:.7rem; color:#9aa6c2; font-weight:600; }
+.kpi-value{ font-size:1.15rem; font-weight:700; line-height:1.3; }
+.kpi-flag{
+  position:absolute; top:.65rem; right:.75rem; font-size:.6rem;
+  background:var(--copper); color:#fff; padding:.12rem .4rem; border-radius:4px; font-weight:700;
+}
+.kpi-warn{ background:var(--warn); }
+.kpi-ok{ background:var(--ok); }
+
+.unit-section{ margin-bottom:1.7rem; }
+.unit-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:.8rem; }
+.unit-actions{ display:flex; gap:.45rem; }
+.btn{
+  font-family:var(--font); font-size:.74rem; font-weight:600; padding:.4rem .8rem;
+  border-radius:6px; cursor:pointer; border:1.5px solid transparent; transition:opacity .12s, background .12s;
+}
+.btn:hover{ opacity:.88; }
+.btn-primary{ background:var(--copper); color:#fff; }
+.btn-primary:disabled{ background:#d7dbe3; cursor:not-allowed; opacity:1; }
+.btn-ghost{ background:transparent; border-color:var(--line-2); color:var(--slate); }
+.btn-sm{ font-size:.7rem; padding:.3rem .6rem; }
+.btn-add{ background:var(--navy); color:#fff; width:100%; margin-top:.6rem; }
+.btn-del{
+  background:transparent; border:none; color:var(--warn); cursor:pointer; font-size:1rem;
+  padding:0 .3rem; line-height:1; font-weight:700;
+}
+.btn-del:hover{ color:#7a2114; }
+
+table.dtable{ width:100%; border-collapse:collapse; font-size:.8rem; }
+table.dtable th{
+  text-align:left; font-size:.66rem; color:var(--slate-light); font-weight:700; text-transform:uppercase;
+  letter-spacing:.04em; padding:.45rem .45rem; border-bottom:1.5px solid var(--ink);
+}
+table.dtable td{ padding:.4rem .45rem; border-bottom:1px solid var(--line); }
+table.dtable td.num{ text-align:right; }
+table.dtable th.num-col{ text-align:right; }
+table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:center; padding:.4rem .1rem; }
+
+.cell-input{
+  width:100%; font-family:var(--font); font-size:.8rem; font-weight:500;
+  border:1px solid var(--line-2); border-radius:5px; padding:.3rem .4rem; text-align:left;
+  transition:border-color .12s;
+}
+.cell-input:focus{ outline:none; border-color:var(--navy); }
+.cell-input.w-name{ min-width:3.8rem; }
+.cell-input.w-num{ min-width:5.6rem; text-align:right; }
+.cell-input.w-count{ width:4.2rem; text-align:right; }
+
+.unit-footer{
+  display:flex; justify-content:space-between; font-size:.74rem; padding:.6rem .45rem 0;
+  color:var(--slate);
+}
+.footer-ok .footer-status{ color:var(--ok); font-weight:700; }
+.footer-warn .footer-status{ color:var(--warn); font-weight:700; }
+.cnt-delta{
+  display:inline-block; font-size:.72rem; font-weight:700; padding:.08rem .4rem; border-radius:4px;
+}
+.ov-strip-item .cnt-delta{ width:fit-content; margin-top:.1rem; }
+.ov-strip-item .delta-down{ background:rgba(243,165,153,0.18); color:#f3a599; }
+.ov-strip-item .delta-up{ background:rgba(143,217,176,0.18); color:#8fd9b0; }
+.ov-strip-item .delta-flat{ background:rgba(255,255,255,0.12); color:#cfd5e0; }
+.delta-down{ background:var(--warn-soft); color:var(--warn); }
+.delta-up{ background:var(--ok-soft); color:var(--ok); }
+.delta-flat{ background:#eef0f4; color:var(--slate-light); }
+.auto-note{ font-size:.7rem; color:var(--copper-deep); margin:.5rem .45rem 0; font-style:italic; }
+
+.summary-card{ background:var(--ink); color:#fff; border-radius:8px; padding:1.2rem 1.3rem; }
+.summary-card h3{ font-size:.82rem; margin:0 0 .85rem; color:var(--copper); font-weight:700; }
+.summary-table{ width:100%; border-collapse:collapse; font-size:.88rem; }
+.summary-table td{ padding:.5rem 0; border-bottom:1px solid #2a3650; }
+.summary-table td.num{ text-align:right; font-weight:700; }
+.total-row td{ border-bottom:none; border-top:1.5px solid var(--copper); padding-top:.65rem; font-weight:700; }
+
+/* ── Overview tab: summary strip ── */
+.ov-strip{
+  display:flex; align-items:stretch; gap:0; background:linear-gradient(135deg, var(--navy), var(--ink));
+  border-radius:10px; padding:1.3rem 1.6rem; margin-bottom:1.6rem; flex-wrap:wrap;
+  box-shadow:0 2px 10px rgba(13,21,32,0.18);
+}
+.ov-strip-item{ flex:1; min-width:160px; display:flex; flex-direction:column; gap:.3rem; padding:0 1.2rem; position:relative; }
+.ov-strip-div{ width:1px; background:rgba(255,255,255,0.14); margin:.2rem 0; }
+.ov-strip-label{ font-size:.7rem; color:#9aa6c2; font-weight:600; letter-spacing:.02em; }
+.ov-strip-value{ font-size:1.25rem; font-weight:700; color:#fff; }
+.ov-strip-tag{
+  display:inline-block; width:fit-content; font-size:.66rem; font-weight:700; padding:.14rem .5rem;
+  border-radius:4px; background:rgba(255,255,255,0.14); color:#cfd5e0;
+}
+.ov-tag-up{ background:rgba(143,217,176,0.16); color:#8fd9b0; }
+
+/* ── Overview tab: cards ── */
+.ov-grid{ display:grid; grid-template-columns: 1.35fr 1fr; gap:1.2rem; align-items:start; }
+@media (max-width: 1100px){ .ov-grid{ grid-template-columns:1fr; } }
+.ov-card{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:1.5rem 1.6rem; }
+.ov-section-title{
+  display:flex; align-items:center; font-size:.95rem; font-weight:700; color:var(--navy);
+  margin:0 0 1.1rem; letter-spacing:-.01em; padding-bottom:.8rem; border-bottom:1.5px solid var(--ink);
+}
+.legend{ display:flex; flex-wrap:wrap; gap:.5rem 1.1rem; margin-bottom:1.3rem; }
+.legend-item{ display:flex; align-items:center; gap:.4rem; font-size:.77rem; color:var(--slate); font-weight:500; }
+.legend-swatch{ width:.8rem; height:.8rem; border-radius:3px; }
+
+.ov-bars{ display:flex; justify-content:center; align-items:flex-end; gap:2.4rem; padding:.5rem 0 0; }
+.ov-bar-col{ display:flex; flex-direction:column; align-items:center; }
+.ov-bar-total{ font-size:1.25rem; font-weight:700; color:var(--navy); margin-bottom:.55rem; }
+.ov-bar-stack{
+  width:120px; display:flex; flex-direction:column-reverse; border-radius:6px; overflow:hidden;
+  box-shadow:0 2px 8px rgba(13,21,32,0.14);
+}
+.ov-bar-seg{
+  display:flex; align-items:center; justify-content:center; flex-direction:column; color:#fff;
+  font-size:.68rem; font-weight:700; padding:.2rem 0; text-align:center; line-height:1.3;
+  transition:filter .12s;
+}
+.ov-bar-seg:hover{ filter:brightness(1.08); }
+.ov-bar-seg .seg-val{ font-size:.64rem; font-weight:600; opacity:.9; }
+.ov-bar-label{ margin-top:.7rem; font-size:.8rem; font-weight:700; color:var(--ink); background:#f1f3f6; padding:.25rem .7rem; border-radius:5px; }
+.ov-bar-arrow{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.4rem; padding-bottom:2.6rem; }
+.ov-arrow-icon{ font-size:1.4rem; color:var(--copper); font-weight:700; }
+.ov-arrow-val{ font-size:.9rem; font-weight:700; color:var(--ok); background:var(--ok-soft); padding:.2rem .55rem; border-radius:5px; }
+
+/* ── Overview tab: household bars ── */
+.ov-house-row-big{ display:flex; align-items:center; gap:.6rem; margin-bottom:.45rem; }
+.ov-house-row-label{ font-size:.82rem; font-weight:700; color:var(--navy); width:4.6rem; flex-shrink:0; }
+.ov-house-row-nums{ font-size:.85rem; color:var(--slate); flex:1; }
+.ov-house-row-nums b{ color:var(--ink); font-size:.95rem; }
+.ov-house-bar-track{ height:7px; background:#eef0f4; border-radius:4px; overflow:hidden; margin-bottom:1.2rem; }
+.ov-house-bar-fill{ height:100%; border-radius:4px; transition:width .3s; }
+.ov-house-total{
+  display:flex; justify-content:space-between; align-items:center; padding:.6rem 0;
+  border-top:1px solid var(--line); font-size:.82rem; color:var(--slate); font-weight:600;
+}
+.ov-house-total .num{ color:var(--ink); font-weight:700; font-size:.95rem; }
+
+.ov-conclusion{
+  background:linear-gradient(160deg, var(--navy), var(--ink)); color:#fff; border-radius:10px;
+  padding:1.3rem 1.6rem; margin-top:1.5rem; font-size:.9rem; line-height:1.95;
+  box-shadow:0 2px 10px rgba(13,21,32,0.18);
+}
+.ov-conclusion b{ color:var(--copper); }
+.ov-conclusion .hl-blue{ color:#8fb4e8; font-weight:700; }
+.ov-conclusion .hl-red{ color:#f0a499; font-weight:700; }
+.ov-conclusion .hl-green{ color:#8fd9b0; font-weight:700; }
+
+.empty-state{
+  text-align:center; padding:3rem 1rem; color:var(--slate-light); font-size:.9rem;
+  border:1.5px dashed var(--line-2); border-radius:8px;
+}
+
+/* ── Tooltip ── */
+.tip{
+  position:relative; cursor:help;
+  border-bottom:1px dotted var(--slate-faint);
+}
+.tip::after{
+  content: attr(data-tip);
+  position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%) translateY(4px);
+  width:max-content; max-width:260px;
+  background:var(--ink); color:#fff; font-size:.7rem; font-weight:400; line-height:1.5;
+  padding:.55rem .7rem; border-radius:6px;
+  opacity:0; visibility:hidden; transition:opacity .15s, transform .15s;
+  z-index:50; pointer-events:none;
+  box-shadow:0 4px 14px rgba(13,21,32,0.25);
+  text-align:left;
+}
+.tip::before{
+  content:''; position:absolute; left:50%; bottom:100%; transform:translateX(-50%) translateY(4px);
+  border:5px solid transparent; border-top-color:var(--ink);
+  opacity:0; visibility:hidden; transition:opacity .15s, transform .15s; z-index:50; pointer-events:none;
+}
+.tip:hover::after, .tip:hover::before{ opacity:1; visibility:visible; transform:translateX(-50%) translateY(0); }
+.tip-icon{
+  display:inline-flex; align-items:center; justify-content:center; width:1.05rem; height:1.05rem;
+  border-radius:50%; background:#e1e4ea; color:var(--slate); font-size:.62rem; font-weight:700;
+  margin-left:.3rem; cursor:help; position:relative; vertical-align:middle;
+}
+.tip-icon::after{
+  content: attr(data-tip);
+  position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%) translateY(4px);
+  width:max-content; max-width:280px;
+  background:var(--ink); color:#fff; font-size:.7rem; font-weight:400; line-height:1.55;
+  padding:.6rem .75rem; border-radius:6px;
+  opacity:0; visibility:hidden; transition:opacity .15s, transform .15s;
+  z-index:50; pointer-events:none; box-shadow:0 4px 14px rgba(13,21,32,0.25); text-align:left;
+}
+.tip-icon::before{
+  content:''; position:absolute; left:50%; bottom:100%; transform:translateX(-50%) translateY(4px);
+  border:5px solid transparent; border-top-color:var(--ink);
+  opacity:0; visibility:hidden; transition:opacity .15s, transform .15s; z-index:50; pointer-events:none;
+}
+.tip-icon:hover::after, .tip-icon:hover::before{ opacity:1; visibility:visible; transform:translateX(-50%) translateY(0); }
+.tip-icon:hover{ background:var(--copper); color:#fff; }
+.kpi-tip{ background:rgba(255,255,255,0.18); color:#cfd5e0; }
+.kpi-tip:hover{ background:var(--copper); color:#fff; }
+
+.foot{
+  max-width:1680px; margin:2.5rem auto 0; padding:1.3rem 2.2rem 0; font-size:.74rem;
+  color:var(--slate-faint); line-height:1.7; border-top:1px solid var(--line);
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <div class="hero-top">
+      <div class="hero-eyebrow">BFCCC <span class="hero-eyebrow-sub">(Business Feasibility Correction Coefficient Calculator)</span></div>
+      <h1>사업성보정계수 계산기</h1>
+      <p class="hero-sub">
+        공시지가 비율로 산정되는 사업성보정계수가 임대주택 면적 · 용적률 · 세대수 배분에 미치는 영향을
+        단계별로 계산합니다. 용도지역과 타입은 자유롭게 추가·삭제할 수 있습니다.
+      </p>
+    </div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="tab-input"><span class="tab-num">1</span>입력</button>
+      <button class="tab-btn" data-tab="tab-calc"><span class="tab-num">2</span>계산</button>
+      <button class="tab-btn" data-tab="tab-result"><span class="tab-num">3</span>결과요약</button>
+      <button class="tab-btn" data-tab="tab-overview"><span class="tab-num">4</span>총괄보기</button>
+    </nav>
+  </header>
+
+  <section class="tab-panel active" id="tab-input">
+    <div class="cols-2">
+      <div class="panel">
+        <h2 class="panel-title">공시지가 · 용도지역</h2>
+
+        <div class="block block-highlight">
+          <div class="block-head">
+            <h3>공시지가</h3>
+            <span class="block-tag">보정계수 산정 기준</span>
+          </div>
+          <div class="field-row">
+            <label class="nf">
+              <span class="nf-label tip" data-tip="해당 시·도 또는 자치구의 재개발 사업 기준 평균 공시지가입니다.">서울시 평균 공시지가</span>
+              <div class="nf-input-wrap nf-accent">
+                <input type="text" inputmode="decimal" id="seoulPrice" placeholder="예: 6,302,982" />
+                <span class="nf-suffix">원/㎡</span>
+              </div>
+            </label>
+            <label class="nf">
+              <span class="nf-label tip" data-tip="사업시행구역 내 모든 용도지역 대지(지목)의 면적 가중평균 공시지가입니다.">사업지 평균 공시지가</span>
+              <div class="nf-input-wrap nf-accent">
+                <input type="text" inputmode="decimal" id="sitePrice" placeholder="예: 4,161,000" />
+                <span class="nf-suffix">원/㎡</span>
+              </div>
+              <span class="nf-hint">면적 가중평균 기준 · 손실보상 토지환산에도 동일값 적용</span>
+            </label>
+          </div>
+          <div class="cf-live" id="cfLive"></div>
+        </div>
+
+        <div class="block">
+          <div class="block-head">
+            <h3>대지 · 용도지역</h3>
+            <span class="block-tag" id="zoneTotalArea"></span>
+          </div>
+          <table class="dtable">
+            <thead>
+              <tr>
+                <th title="용도지역 명칭입니다. 자유롭게 추가·삭제·수정할 수 있습니다.">용도지역</th>
+                <th class="num-col" title="해당 용도지역의 면적(㎡)입니다.">면적(㎡)</th>
+                <th class="num-col" title="해당 용도지역의 법정 기준용적률(%)입니다. 예: 제2종일반주거지역 200%">기준용적률(%)</th>
+                <th class="del-col"></th>
+              </tr>
+            </thead>
+            <tbody id="zoneTableBody"></tbody>
+          </table>
+          <button class="btn btn-add btn-sm" id="addZoneBtn">+ 용도지역 추가</button>
+        </div>
+
+        <div class="block">
+          <div class="field-row">
+            <label class="nf">
+              <span class="nf-label">기준용적률(종상향 목표)<span class="tip-icon" data-tip="용도지역 종상향을 통해 받을 수 있는 최대 허용 용적률입니다. 통상 250%가 적용됩니다.">?</span></span>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="targetFAR" /><span class="nf-suffix">%</span></div>
+            </label>
+            <label class="nf">
+              <span class="nf-label">계획 세대수(전체)<span class="tip-icon" data-tip="기부형·매입형 임대주택과 일반분양을 포함한 사업 전체 계획 세대수입니다.">?</span></span>
+              <div class="nf-input-wrap"><input type="text" inputmode="numeric" id="totalHouseholds" /><span class="nf-suffix">세대</span></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-title">정비기반시설 · 손실보상</h2>
+        <div class="block">
+          <div class="block-head"><h3>정비기반 · 공동이용시설</h3></div>
+          <div class="field-row">
+            <label class="nf">
+              <span class="nf-label">현황 국공유지 면적<span class="tip-icon" data-tip="사업구역 내 현재 국가 또는 지자체가 소유한 토지 면적입니다. 정비기반시설 순부담 계산 시 차감됩니다.">?</span></span>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="publicLand" /><span class="nf-suffix">㎡</span></div>
+            </label>
+            <label class="nf">
+              <span class="nf-label">정비기반시설 설치면적<span class="tip-icon" data-tip="도로, 공원 등 사업으로 새로 설치·기부채납하는 정비기반시설의 전체 면적입니다.">?</span></span>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="infraArea" /><span class="nf-suffix">㎡</span></div>
+            </label>
+          </div>
+          <div class="field-row">
+            <label class="nf">
+              <span class="nf-label">공동이용시설 설치면적<span class="tip-icon" data-tip="작은도서관, 주민공동시설 등 설치 시 추가 용적률 인센티브를 받는 공동이용시설의 면적입니다.">?</span></span>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="communityArea" /><span class="nf-suffix">㎡</span></div>
+            </label>
+            <label class="nf">
+              <span class="nf-label">세입자 손실보상액<span class="tip-icon" data-tip="영업·주거 세입자에게 지급하는 손실보상 총액입니다. 토지면적으로 환산되어 임대주택 의무비율에서 일부 차감됩니다.">?</span></span>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="compensationAmt" /><span class="nf-suffix">원</span></div>
+            </label>
+          </div>
+        </div>
+
+        <div class="block">
+          <div class="unit-head">
+            <h3 style="font-size:.86rem;font-weight:700;color:var(--navy);margin:0;">임대(기부형) 타입별 세대수</h3>
+            <div class="unit-actions">
+              <button class="btn btn-primary btn-sm" id="autoSuggestBtn">자동제안</button>
+              <button class="btn btn-ghost btn-sm" id="resetDonationBtn">초기화</button>
+            </div>
+          </div>
+          <table class="dtable">
+            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 전용면적(㎡)입니다.">전용면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 전용면적의 소계입니다.">소계면적(㎡)</th><th class="del-col"></th></tr></thead>
+            <tbody id="donationTableBody"></tbody>
+          </table>
+          <button class="btn btn-add btn-sm" id="addDonationBtn">+ 타입 추가</button>
+          <div class="unit-footer" id="donationFooter"></div>
+          <p class="auto-note" id="autoNote" style="display:none;">자동제안이 적용된 배분입니다 — 실제 평면 설계에 맞춰 자유롭게 조정하세요.</p>
+        </div>
+
+        <div class="block">
+          <div class="unit-head"><h3 style="font-size:.86rem;font-weight:700;color:var(--navy);margin:0;">임대(매입형) 타입별 세대수</h3></div>
+          <table class="dtable">
+            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 전용면적(㎡)입니다.">전용면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 전용면적의 소계입니다.">소계면적(㎡)</th><th class="del-col"></th></tr></thead>
+            <tbody id="buyTableBody"></tbody>
+          </table>
+          <button class="btn btn-add btn-sm" id="addBuyBtn">+ 타입 추가</button>
+          <div class="unit-footer footer-ok" id="buyFooter"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-calc">
+    <div class="panel">
+      <h2 class="panel-title">단계별 계산</h2>
+      <p class="panel-sub">7단계 산식이 입력값 변경에 따라 실시간으로 재계산됩니다.</p>
+      <ol class="chain" id="chainList"></ol>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-result">
+    <div class="cols-2">
+      <div class="panel">
+        <h2 class="panel-title">핵심 지표</h2>
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="summary-card">
+          <h3>세대수 배분 요약</h3>
+          <table class="summary-table">
+            <thead><tr><th>구분</th><th>세대수</th></tr></thead>
+            <tbody id="summaryTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <h2 class="panel-title">타입별 배분 현황</h2>
+        <p class="panel-sub">입력 탭에서 수정한 타입별 세대수가 그대로 반영됩니다.</p>
+        <div class="unit-section">
+          <div class="unit-head"><h3 style="font-size:.86rem;font-weight:700;color:var(--navy);margin:0;">임대(기부형)</h3></div>
+          <table class="dtable">
+            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 전용면적(㎡)입니다.">전용면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 전용면적의 소계입니다.">소계면적(㎡)</th></tr></thead>
+            <tbody id="resultDonationBody"></tbody>
+          </table>
+          <div class="unit-footer" id="resultDonationFooter"></div>
+        </div>
+        <div class="unit-section">
+          <div class="unit-head"><h3 style="font-size:.86rem;font-weight:700;color:var(--navy);margin:0;">임대(매입형)</h3></div>
+          <table class="dtable">
+            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 전용면적(㎡)입니다.">전용면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 전용면적의 소계입니다.">소계면적(㎡)</th></tr></thead>
+            <tbody id="resultBuyBody"></tbody>
+          </table>
+          <div class="unit-footer footer-ok" id="resultBuyFooter"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="tab-overview">
+    <div class="panel">
+      <h2 class="panel-title">용적률 구성 비교 · 세대수 변화 총괄</h2>
+      <p class="panel-sub">보정계수 적용 전·후의 용적률 구성과 임대세대수 변화를 한눈에 비교합니다.</p>
+      <div id="overviewContent"></div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    본 계산기는 「빈집 및 소규모주택 정비에 관한 특례법」 및 서울시 사업성보정계수 산정 기준에 따른 참고용
+    모델입니다. 실제 인허가 시 지자체 협의 결과에 따라 수치가 달라질 수 있습니다.
+  </footer>
+</div>
+
+<script>
+function fmtArea(n) {
+  if (n === null || n === undefined || Number.isNaN(n)) return "—";
+  return n.toLocaleString("ko-KR", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+}
+function fmtInt(n) {
+  if (n === null || n === undefined || Number.isNaN(n)) return "—";
+  return Math.round(n).toLocaleString("ko-KR");
+}
+function fmtNum(n, d) {
+  if (n === null || n === undefined || Number.isNaN(n)) return "—";
+  return n.toLocaleString("ko-KR", { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+function fmtPctVal(n, d) {
+  d = d === undefined ? 4 : d;
+  if (n === null || n === undefined || Number.isNaN(n)) return "—";
+  return n.toLocaleString("ko-KR", { minimumFractionDigits: d, maximumFractionDigits: d }) + "%";
+}
+function parseNum(str) {
+  if (str === null || str === undefined) return null;
+  const cleaned = String(str).replace(/,/g, "").trim();
+  if (cleaned === "" || cleaned === "-") return null;
+  const v = parseFloat(cleaned);
+  return Number.isNaN(v) ? null : v;
+}
+function liveFormat(str) {
+  if (str === null || str === undefined) return "";
+  let s = String(str).replace(/,/g, "");
+  const neg = s.startsWith("-");
+  if (neg) s = s.slice(1);
+  const parts = s.split(".");
+  let intPart = parts[0].replace(/[^\d]/g, "");
+  intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  let result = (neg ? "-" : "") + intPart;
+  if (parts.length > 1) result += "." + parts[1].replace(/[^\d]/g, "");
+  return result;
+}
+function formatAreaOnBlur(el) {
+  const v = parseNum(el.value);
+  el.value = v === null ? "" : liveFormat(v.toFixed(4));
+}
+
+let uid = 1;
+function nextId() { return "id" + (uid++); }
+
+let zones = [
+  { id: nextId(), name: "1종일반주거지역", area: 12161.97, farPct: 150 },
+  { id: nextId(), name: "2종일반주거지역", area: 4586.32, farPct: 200 },
+];
+
+const DEFAULT_DONATION_UNITS = [
+  { id: "d1", name: "44A", area: 63.8550, planCount: 2, count: 2 },
+  { id: "d2", name: "44B", area: 64.3930, planCount: 2, count: 2 },
+  { id: "d3", name: "59A", area: 85.9489, planCount: 24, count: 24 },
+  { id: "d4", name: "59B", area: 86.3285, planCount: 24, count: 24 },
+  { id: "d5", name: "59C", area: 84.1189, planCount: 12, count: 12 },
+  { id: "d6", name: "59D", area: 85.4207, planCount: 4, count: 4 },
+  { id: "d7", name: "84A", area: 118.6246, planCount: 3, count: 3 },
+  { id: "d8", name: "84B", area: 119.0234, planCount: 3, count: 3 },
+];
+const DEFAULT_BUY_UNITS = [
+  { id: "b1", name: "44A", area: 63.8550, planCount: 14, count: 14 },
+  { id: "b2", name: "44B", area: 64.3930, planCount: 6, count: 6 },
+  { id: "b3", name: "59A", area: 85.9489, planCount: 14, count: 14 },
+  { id: "b4", name: "59B", area: 86.3285, planCount: 14, count: 14 },
+  { id: "b5", name: "59C", area: 84.1189, planCount: 6, count: 6 },
+  { id: "b6", name: "59D", area: 85.4207, planCount: 2, count: 2 },
+];
+
+let donationUnits = DEFAULT_DONATION_UNITS.map(function(u){ return Object.assign({}, u); });
+let buyUnits = DEFAULT_BUY_UNITS.map(function(u){ return Object.assign({}, u); });
+let autoApplied = false;
+
+const SIMPLE_FIELD_IDS = [
+  "seoulPrice","sitePrice","targetFAR","totalHouseholds",
+  "publicLand","infraArea","communityArea","compensationAmt"
+];
+const SIMPLE_DEFAULTS = {
+  targetFAR: 250, totalHouseholds: 556,
+  publicLand: 528, infraArea: 2032.71, communityArea: 912.67,
+  compensationAmt: 6289566541
+};
+
+function getFieldVal(id) {
+  const el = document.getElementById(id);
+  return parseNum(el.value);
+}
+
+function calculate() {
+  const seoulPrice = getFieldVal("seoulPrice");
+  const sitePrice = getFieldVal("sitePrice");
+  const targetFARPct = getFieldVal("targetFAR") || 0;
+  const targetFAR = targetFARPct / 100;
+  const totalHouseholds = getFieldVal("totalHouseholds") || 0;
+  const publicLand = getFieldVal("publicLand") || 0;
+  const infraArea = getFieldVal("infraArea") || 0;
+  const communityArea = getFieldVal("communityArea") || 0;
+  const compensationAmt = getFieldVal("compensationAmt") || 0;
+
+  const landArea = zones.reduce(function(s,z){ return s + (z.area||0); }, 0);
+  const weightedSum = zones.reduce(function(s,z){ return s + (z.area||0)*((z.farPct||0)/100); }, 0);
+  const baseFAR = landArea > 0 ? weightedSum / landArea : null;
+
+  const netBurden = infraArea - publicLand;
+  const alpha = landArea > 0 ? netBurden / landArea : null;
+  const relaxedBaseFAR = alpha !== null ? targetFAR * (1 + 1.3 * alpha) : null;
+
+  const hasPrices = seoulPrice !== null && sitePrice !== null && sitePrice > 0;
+  const rawRatio = hasPrices ? seoulPrice / sitePrice : null;
+  const correctionFactor = hasPrices ? Math.min(rawRatio, 1.5) : null;
+  const isCapped = hasPrices ? rawRatio >= 1.5 : false;
+
+  const baseFARRounded = baseFAR !== null ? Math.round(baseFAR * 10000) / 10000 : null;
+  const compLandArea = hasPrices && sitePrice > 0 ? compensationAmt / (sitePrice * 2) : null;
+  const lossCompRatio = (compLandArea !== null && baseFARRounded !== null && landArea > 0)
+    ? baseFARRounded * (1 + 0.7 * (compLandArea / landArea)) - baseFARRounded
+    : null;
+
+  const communityBonusFAR = landArea > 0 ? communityArea / landArea : null;
+
+  const buyHouseholdsTotal = buyUnits.reduce(function(s,u){ return s + (u.count||0); }, 0);
+  const buyPlanTotal = buyUnits.reduce(function(s,u){ return s + (u.planCount||0); }, 0);
+  const donationHouseholdsTotal = donationUnits.reduce(function(s,u){ return s + (u.count||0); }, 0);
+  const donationPlanTotal = donationUnits.reduce(function(s,u){ return s + (u.planCount||0); }, 0);
+  const donationDelta = donationHouseholdsTotal - donationPlanTotal;
+  const buyRatio = totalHouseholds > 0 ? Math.floor((buyHouseholdsTotal/totalHouseholds)*100)/100 : null;
+
+  const donationAreaBefore = (baseFAR !== null && lossCompRatio !== null && landArea > 0)
+    ? Math.floor(landArea * ((targetFAR - baseFAR)/2 - lossCompRatio) * 10000) / 10000
+    : null;
+  const donationAreaAfter = (baseFAR !== null && lossCompRatio !== null && correctionFactor !== null && landArea > 0)
+    ? Math.floor(landArea * ((targetFAR - baseFAR)/2/correctionFactor - lossCompRatio) * 10000) / 10000
+    : null;
+
+  const farBefore = (relaxedBaseFAR !== null && buyRatio !== null && communityBonusFAR !== null)
+    ? Math.floor((relaxedBaseFAR + buyRatio*2.5 + communityBonusFAR) * 10000) / 10000
+    : null;
+  const farAfter = (relaxedBaseFAR !== null && buyRatio !== null && communityBonusFAR !== null && correctionFactor !== null)
+    ? Math.floor((relaxedBaseFAR + buyRatio*2.5*correctionFactor + communityBonusFAR) * 10000) / 10000
+    : null;
+
+  const donationAreaCurrentTotal = donationUnits.reduce(function(s,u){ return s + (u.count||0)*(u.area||0); }, 0);
+  const isOK = donationAreaAfter !== null ? donationAreaCurrentTotal <= donationAreaAfter : null;
+  const generalHouseholdsAfter = totalHouseholds - donationHouseholdsTotal - buyHouseholdsTotal;
+
+  const buyBonusBefore = buyRatio !== null ? buyRatio*2.5*100 : null;
+  const buyBonusAfter = (buyRatio !== null && correctionFactor !== null) ? buyRatio*2.5*correctionFactor*100 : null;
+  const communityBonusPct = communityBonusFAR !== null ? communityBonusFAR*100 : null;
+
+  return {
+    landArea: landArea, baseFAR: baseFAR, netBurden: netBurden, alpha: alpha, relaxedBaseFAR: relaxedBaseFAR,
+    hasPrices: hasPrices, rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped,
+    compLandArea: compLandArea, lossCompRatio: lossCompRatio, communityBonusFAR: communityBonusFAR,
+    buyHouseholdsTotal: buyHouseholdsTotal, donationHouseholdsTotal: donationHouseholdsTotal, buyRatio: buyRatio,
+    buyPlanTotal: buyPlanTotal,
+    donationPlanTotal: donationPlanTotal, donationDelta: donationDelta,
+    donationAreaBefore: donationAreaBefore, donationAreaAfter: donationAreaAfter,
+    farBefore: farBefore, farAfter: farAfter,
+    donationAreaCurrentTotal: donationAreaCurrentTotal, isOK: isOK,
+    generalHouseholdsAfter: generalHouseholdsAfter, totalHouseholds: totalHouseholds,
+    targetFARPct: targetFARPct,
+    buyBonusBefore: buyBonusBefore, buyBonusAfter: buyBonusAfter,
+    communityBonusPct: communityBonusPct
+  };
+}
+
+document.querySelectorAll(".tab-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
+    document.querySelectorAll(".tab-panel").forEach(function(p){ p.classList.remove("active"); });
+    btn.classList.add("active");
+    document.getElementById(btn.getAttribute("data-tab")).classList.add("active");
+  });
+});
+
+function chainStepHTML(n, title, formula, result, sub, highlight, badge, tip) {
+  return '' +
+    '<li class="chain-step' + (highlight ? ' chain-step-hl' : '') + '">' +
+      '<div class="chain-num">' + n + '</div>' +
+      '<div class="chain-body">' +
+        '<div class="chain-title-row">' +
+          '<h4>' + title + (tip ? '<span class="tip-icon" data-tip="' + tip + '">?</span>' : '') + '</h4>' +
+          (badge ? '<span class="chain-badge">' + badge + '</span>' : '') +
+        '</div>' +
+        '<p class="chain-formula">' + formula + '</p>' +
+        '<div class="chain-result num">' + result + '</div>' +
+        (sub ? '<p class="chain-sub num">' + sub + '</p>' : '') +
+      '</div>' +
+    '</li>';
+}
+
+function renderChain(calc) {
+  const html = [
+    chainStepHTML("1","기준용적률",
+      "(용도지역별 면적 × 기준용적률) 합 ÷ 대지면적",
+      calc.baseFAR !== null ? fmtPctVal(calc.baseFAR*100) : "—",
+      null, false, null,
+      "현재 용도지역 구성으로 산정한 면적가중평균 용적률입니다. 종상향 전 출발점이 됩니다."),
+    chainStepHTML("2","정비기반시설 부담률 (α)",
+      "(정비기반시설면적 − 국공유지면적) ÷ 대지면적",
+      calc.alpha !== null ? fmtPctVal(calc.alpha*100) : "—",
+      calc.netBurden !== null ? "순부담 " + fmtArea(calc.netBurden) + "㎡" : null,
+      false, null,
+      "사업이 순수하게 추가 제공하는 정비기반시설 비율로, 완화용적률 산정에 가산 요인으로 반영됩니다."),
+    chainStepHTML("3","완화용적률 계산기준",
+      "기준용적률(상향) × (1 + 1.3 × α)",
+      calc.relaxedBaseFAR !== null ? fmtPctVal(calc.relaxedBaseFAR*100) : "—",
+      null, false, null,
+      "정비기반시설 제공 비율(α)을 반영해 산정한 완화용적률의 계산 기준값입니다."),
+    chainStepHTML("4","사업성보정계수",
+      "MIN(서울시 평균공시지가 ÷ 사업지 평균공시지가, 1.5)",
+      calc.correctionFactor !== null ? fmtNum(calc.correctionFactor,4) : "공시지가 입력 필요",
+      calc.rawRatio !== null ? "원시 비율 " + fmtNum(calc.rawRatio,4) : null,
+      true,
+      calc.isCapped ? "상한 1.5 캡 적용됨" : (calc.hasPrices ? "캡 미적용" : null),
+      "사업지 공시지가가 서울시 평균보다 낮을수록 값이 커지며, 1.5를 초과할 수 없습니다. 임대주택 의무면적과 용적률 인센티브에 직접 영향을 줍니다."),
+    chainStepHTML("5","손실보상 토지환산",
+      "환산면적 = 손실보상액 ÷ (사업지공시지가 × 2)",
+      calc.compLandArea !== null ? fmtArea(calc.compLandArea) + "㎡" : "공시지가 입력 필요",
+      calc.lossCompRatio !== null ? "토지환산비율 " + fmtPctVal(calc.lossCompRatio*100) : null,
+      false, null,
+      "세입자 손실보상액을 토지면적으로 환산한 값으로, 임대주택 의무비율 산정 시 일부를 차감해줍니다."),
+    chainStepHTML("6","기부채납 임대주택 면적",
+      "대지면적 × ((기준용적률(상향)−기준용적률)÷2÷보정계수 − 손실보상비율)",
+      calc.donationAreaAfter !== null ? fmtArea(calc.donationAreaAfter) + "㎡" : "—",
+      calc.donationAreaBefore !== null ? "보정 전 " + fmtArea(calc.donationAreaBefore) + "㎡ → 보정 후" : null,
+      true, null,
+      "타입별 세대수의 합산 면적이 넘지 않아야 하는 기부채납 임대주택의 상한면적입니다."),
+    chainStepHTML("7","용적률 산정 (적용 전 → 후)",
+      "완화기준 + 매입형비율×2.5×보정계수 + 공동이용시설보너스",
+      (calc.farBefore !== null && calc.farAfter !== null)
+        ? fmtPctVal(calc.farBefore*100) + " → " + fmtPctVal(calc.farAfter*100) : "—",
+      null, true, null,
+      "통합심의에 반영되는 최종 용적률로, 보정계수 적용 전·후를 비교합니다.")
+  ];
+  document.getElementById("chainList").innerHTML = html.join("");
+}
+
+function renderCFLive(calc) {
+  const el = document.getElementById("cfLive");
+  if (!el) return;
+  if (!calc.hasPrices) {
+    el.innerHTML = '<span class="cf-live-empty">두 공시지가를 모두 입력하면 보정계수가 자동으로 계산됩니다.</span>';
+    return;
+  }
+  el.innerHTML =
+    '<div><div class="cf-live-label">산출된 사업성보정계수</div>' +
+    '<div class="cf-live-value num">' + fmtNum(calc.correctionFactor,4) + '</div></div>' +
+    '<div style="text-align:right;">' +
+    (calc.isCapped ? '<span class="cf-live-flag">상한 1.5 캡 적용</span><br>' : '') +
+    '<span class="cf-live-detail num">원시 비율 ' + fmtNum(calc.rawRatio,4) + ' (' + fmtNum(calc.rawRatio*100,2) + '%)</span>' +
+    '</div>';
+}
+
+function renderKPI(calc) {
+  const deltaText = (calc.donationDelta === 0)
+    ? "변동없음"
+    : (calc.donationDelta < 0 ? "▼ " + Math.abs(calc.donationDelta) + "세대" : "▲ " + calc.donationDelta + "세대");
+  const deltaCls = calc.donationDelta === 0 ? "" : (calc.donationDelta < 0 ? "kpi-warn" : "kpi-ok");
+  const items = [
+    { label:"보정계수", value: calc.correctionFactor !== null ? fmtNum(calc.correctionFactor,4) : "—",
+      flag: calc.isCapped ? "CAP 1.5" : null, cls:"",
+      tip:"서울시 평균 공시지가 ÷ 사업지 평균 공시지가의 비율로, 1.5를 넘지 않도록 상한이 적용됩니다." },
+    { label:"용적률 증감", value: (calc.farBefore !== null && calc.farAfter !== null)
+        ? "▲ " + fmtNum((calc.farAfter-calc.farBefore)*100,4) + "%p" : "—", cls:"",
+      tip:"보정계수 적용 전과 후, 통합심의 총 용적률의 변화 폭입니다." },
+    { label:"임대(기부형) 세대 증감", value: deltaText + "  (" + fmtInt(calc.donationPlanTotal) + "→" + fmtInt(calc.donationHouseholdsTotal) + ")", cls: deltaCls,
+      tip:"계획(원안) 대비 보정계수를 반영해 현재 입력된 기부형 임대 세대수의 변화입니다." },
+    { label:"현재 배분 상태", value: calc.isOK === null ? "—" : (calc.isOK ? "OK" : "초과"),
+      cls: calc.isOK === false ? "kpi-warn" : (calc.isOK === true ? "kpi-ok" : ""),
+      tip:"입력된 기부형 타입별 세대수의 합산 면적이 보정 후 상한면적 이하인지 여부입니다." }
+  ];
+  const html = items.map(function(it){
+    return '<div class="kpi ' + it.cls + '">' +
+      '<span class="kpi-label">' + it.label + (it.tip ? '<span class="tip-icon kpi-tip" data-tip="' + it.tip + '">?</span>' : '') + '</span>' +
+      '<span class="kpi-value num">' + it.value + '</span>' +
+      (it.flag ? '<span class="kpi-flag">' + it.flag + '</span>' : '') +
+      '</div>';
+  }).join("");
+  document.getElementById("kpiGrid").innerHTML = html;
+}
+
+function renderZoneTable() {
+  const rows = zones.map(function(z){
+    return '<tr data-id="' + z.id + '">' +
+      '<td><input type="text" class="cell-input w-name" data-field="name" data-id="' + z.id + '" value="' + (z.name||"") + '" /></td>' +
+      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="area" data-id="' + z.id + '" data-kind="area" value="' + liveFormat(z.area) + '" /></td>' +
+      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="farPct" data-id="' + z.id + '" value="' + liveFormat(z.farPct) + '" /></td>' +
+      '<td class="del-col"><button class="btn-del" data-id="' + z.id + '" title="삭제">×</button></td>' +
+      '</tr>';
+  }).join("");
+  document.getElementById("zoneTableBody").innerHTML = rows;
+
+  const totalArea = zones.reduce(function(s,z){ return s + (z.area||0); }, 0);
+  document.getElementById("zoneTotalArea").textContent = "합계 " + fmtArea(totalArea) + "㎡";
+
+  attachZoneListeners();
+}
+
+function attachZoneListeners() {
+  document.querySelectorAll('#zoneTableBody [data-field]').forEach(function(input){
+    input.addEventListener("input", function(e){
+      const id = e.target.getAttribute("data-id");
+      const field = e.target.getAttribute("data-field");
+      const zone = zones.find(function(z){ return z.id === id; });
+      if (!zone) return;
+      if (field === "name") {
+        zone.name = e.target.value;
+      } else {
+        const caret = e.target.selectionStart;
+        const before = e.target.value.length;
+        const formatted = liveFormat(e.target.value);
+        zone[field] = parseNum(formatted);
+        e.target.value = formatted;
+        const after = formatted.length;
+        const newPos = Math.max(0, caret + (after - before));
+        e.target.setSelectionRange(newPos, newPos);
+      }
+      renderAll(true);
+    });
+    if (input.getAttribute("data-kind") === "area") {
+      input.addEventListener("blur", function(e){
+        formatAreaOnBlur(e.target);
+        const id = e.target.getAttribute("data-id");
+        const zone = zones.find(function(z){ return z.id === id; });
+        if (zone) zone.area = parseNum(e.target.value);
+        renderAll(true);
+      });
+    }
+  });
+  document.querySelectorAll('#zoneTableBody .btn-del').forEach(function(btn){
+    btn.addEventListener("click", function(e){
+      const id = e.target.getAttribute("data-id");
+      if (zones.length <= 1) { alert("최소 1개의 용도지역이 필요합니다."); return; }
+      zones = zones.filter(function(z){ return z.id !== id; });
+      renderAll();
+    });
+  });
+}
+
+function addZone() {
+  zones.push({ id: nextId(), name: "용도지역", area: 0, farPct: 100 });
+  renderAll();
+}
+
+function deltaBadge(curr, plan) {
+  const d = (curr||0) - (plan||0);
+  if (d === 0) return '<span class="cnt-delta delta-flat">0</span>';
+  if (d < 0) return '<span class="cnt-delta delta-down">▼' + Math.abs(d) + '</span>';
+  return '<span class="cnt-delta delta-up">▲' + d + '</span>';
+}
+
+function unitRowHTML(u, editable, showPlan) {
+  if (editable) {
+    const planCell = showPlan
+      ? '<td><input type="text" inputmode="numeric" class="cell-input w-count" data-field="planCount" data-id="' + u.id + '" value="' + liveFormat(u.planCount) + '" /></td>'
+      : '';
+    const applyCell = '<td><input type="text" inputmode="numeric" class="cell-input w-count" data-field="count" data-id="' + u.id + '" value="' + liveFormat(u.count) + '" /></td>';
+    const deltaCell = showPlan ? '<td class="num">' + deltaBadge(u.count, u.planCount) + '</td>' : '';
+    return '<tr data-id="' + u.id + '">' +
+      '<td><input type="text" class="cell-input w-name" data-field="name" data-id="' + u.id + '" value="' + (u.name||"") + '" /></td>' +
+      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="area" data-id="' + u.id + '" data-kind="area" value="' + liveFormat(u.area) + '" /></td>' +
+      planCell + applyCell + deltaCell +
+      '<td class="num">' + fmtArea((u.count||0)*(u.area||0)) + '</td>' +
+      '<td class="del-col"><button class="btn-del" data-id="' + u.id + '" title="삭제">×</button></td>' +
+      '</tr>';
+  } else {
+    const planCell = showPlan ? '<td class="num">' + fmtInt(u.planCount) + '</td>' : '';
+    const deltaCell = showPlan ? '<td class="num">' + deltaBadge(u.count, u.planCount) + '</td>' : '';
+    return '<tr>' +
+      '<td>' + (u.name||"") + '</td>' +
+      '<td class="num">' + fmtArea(u.area) + '</td>' +
+      planCell +
+      '<td class="num">' + fmtInt(u.count) + '</td>' +
+      deltaCell +
+      '<td class="num">' + fmtArea((u.count||0)*(u.area||0)) + '</td>' +
+      '</tr>';
+  }
+}
+
+function renderUnitTable(units, bodyId, editable, showPlan) {
+  document.getElementById(bodyId).innerHTML = units.map(function(u){ return unitRowHTML(u, editable, showPlan); }).join("");
+}
+
+function attachUnitListeners(units, bodyId, onDelete) {
+  document.querySelectorAll('#' + bodyId + ' [data-field]').forEach(function(input){
+    input.addEventListener("input", function(e){
+      const id = e.target.getAttribute("data-id");
+      const field = e.target.getAttribute("data-field");
+      const u = units.find(function(x){ return x.id === id; });
+      if (!u) return;
+      if (field === "name") {
+        u.name = e.target.value;
+        renderAll(true);
+      } else {
+        const caret = e.target.selectionStart;
+        const before = e.target.value.length;
+        const formatted = liveFormat(e.target.value);
+        u[field] = (field === "count" || field === "planCount") ? (parseNum(formatted) || 0) : parseNum(formatted);
+        e.target.value = formatted;
+        const after = formatted.length;
+        const newPos = Math.max(0, caret + (after - before));
+        e.target.setSelectionRange(newPos, newPos);
+        autoApplied = false;
+        renderAll(true);
+      }
+    });
+    if (input.getAttribute("data-kind") === "area") {
+      input.addEventListener("blur", function(e){
+        formatAreaOnBlur(e.target);
+        const id = e.target.getAttribute("data-id");
+        const u = units.find(function(x){ return x.id === id; });
+        if (u) u.area = parseNum(e.target.value);
+        renderAll(true);
+      });
+    }
+  });
+  document.querySelectorAll('#' + bodyId + ' .btn-del').forEach(function(btn){
+    btn.addEventListener("click", function(e){
+      const id = e.target.getAttribute("data-id");
+      onDelete(id);
+      renderAll();
+    });
+  });
+}
+
+function addDonationType() {
+  donationUnits.push({ id: nextId(), name: "신규", area: 0, planCount: 0, count: 0 });
+  autoApplied = false;
+  renderAll();
+}
+function addBuyType() {
+  buyUnits.push({ id: nextId(), name: "신규", area: 0, planCount: 0, count: 0 });
+  renderAll();
+}
+
+function renderOverview(calc) {
+  const container = document.getElementById("overviewContent");
+
+  if (calc.farBefore === null || calc.farAfter === null) {
+    container.innerHTML = '<div class="empty-state">공시지가를 입력하면 용적률 구성 비교가 표시됩니다.</div>';
+    return;
+  }
+
+  const MAX = Math.max(calc.farAfter*100, calc.farBefore*100) * 1.06;
+  const BAR_H = 300;
+
+  const baseFARPct = calc.baseFAR*100;
+  const halfGap = (calc.targetFARPct - baseFARPct) / 2;
+  const lossPct = calc.lossCompRatio !== null ? calc.lossCompRatio*100 : 0;
+  const donateBeforePct = halfGap - lossPct;
+  const saleBeforePct = calc.targetFARPct - baseFARPct - donateBeforePct;
+
+  const donateAfterPct = halfGap / (calc.correctionFactor||1) - lossPct;
+  const saleAfterPct = calc.targetFARPct - baseFARPct - donateAfterPct;
+
+  const segBefore = [
+    { label:"기준", val: baseFARPct, color:"#2563ab" },
+    { label:"임대(기부)", val: donateBeforePct, color:"#d97a3f" },
+    { label:"분양", val: saleBeforePct, color:"#1f8f63" },
+    { label:"상한(매입)", val: calc.buyBonusBefore||0, color:"#7c5cbf" },
+    { label:"α", val: calc.communityBonusPct||0, color:"#94a3b8" },
+  ];
+  const segAfter = [
+    { label:"기준", val: baseFARPct, color:"#2563ab" },
+    { label:"임대(기부)", val: donateAfterPct, color:"#d97a3f" },
+    { label:"분양", val: saleAfterPct, color:"#1f8f63" },
+    { label:"상한(매입)", val: calc.buyBonusAfter||0, color:"#7c5cbf" },
+    { label:"α", val: calc.communityBonusPct||0, color:"#94a3b8" },
+  ];
+
+  function buildBar(segs) {
+    const segHTML = segs.map(function(s){
+      const hpx = Math.max((s.val/MAX)*BAR_H, 0.5);
+      const showText = hpx > 24;
+      const title = s.label + ' ' + s.val.toFixed(2) + '%';
+      return '<div class="ov-bar-seg" title="' + title + '" style="height:' + hpx.toFixed(1) + 'px;background:' + s.color + ';">' +
+        (showText ? ('<span>' + s.label + '</span><span class="seg-val num">' + s.val.toFixed(2) + '%</span>') : '') +
+        '</div>';
+    }).join("");
+    return '<div class="ov-bar-stack" style="height:' + BAR_H + 'px;">' + segHTML + '</div>';
+  }
+
+  const legend = segBefore.map(function(s){
+    return '<div class="legend-item"><span class="legend-swatch" style="background:' + s.color + ';"></span>' + s.label + '</div>';
+  }).join("");
+
+  const farDeltaPct = (calc.farAfter - calc.farBefore) * 100;
+  const donHouseholds = calc.donationHouseholdsTotal;
+  const donPlan = calc.donationPlanTotal;
+  const buyHouseholds = calc.buyHouseholdsTotal;
+  const buyPlan = calc.buyPlanTotal;
+  const genHouseholds = calc.generalHouseholdsAfter;
+  const donDelta = donHouseholds - donPlan;
+  const buyDelta = buyHouseholds - buyPlan;
+
+  // ── 상단 요약 스트립 ──
+  const stripHTML =
+    '<div class="ov-strip">' +
+      '<div class="ov-strip-item">' +
+        '<span class="ov-strip-label">사업성보정계수</span>' +
+        '<span class="ov-strip-value num">' + fmtNum(calc.correctionFactor,4) + '</span>' +
+        (calc.isCapped ? '<span class="ov-strip-tag">CAP 1.5</span>' : '') +
+      '</div>' +
+      '<div class="ov-strip-div"></div>' +
+      '<div class="ov-strip-item">' +
+        '<span class="ov-strip-label">총 용적률</span>' +
+        '<span class="ov-strip-value num">' + fmtPctVal(calc.farBefore*100,2) + ' → ' + fmtPctVal(calc.farAfter*100,2) + '</span>' +
+        '<span class="ov-strip-tag ov-tag-up num">▲' + fmtNum(farDeltaPct,2) + '%p</span>' +
+      '</div>' +
+      '<div class="ov-strip-div"></div>' +
+      '<div class="ov-strip-item">' +
+        '<span class="ov-strip-label">임대(기부형)</span>' +
+        '<span class="ov-strip-value num">' + fmtInt(donPlan) + ' → ' + fmtInt(donHouseholds) + '세대</span>' +
+        deltaBadge(donHouseholds, donPlan) +
+      '</div>' +
+      '<div class="ov-strip-div"></div>' +
+      '<div class="ov-strip-item">' +
+        '<span class="ov-strip-label">임대(매입형)</span>' +
+        '<span class="ov-strip-value num">' + fmtInt(buyPlan) + ' → ' + fmtInt(buyHouseholds) + '세대</span>' +
+        deltaBadge(buyHouseholds, buyPlan) +
+      '</div>' +
+    '</div>';
+
+  const barsHTML =
+    '<div class="ov-card">' +
+      '<h3 class="ov-section-title">용적률 구성 비교<span class="tip-icon" data-tip="보정계수 적용 전·후의 용적률 구성요소를 누적 막대그래프로 비교합니다. 막대에 마우스를 올리면 각 항목의 상세 비율이 표시됩니다.">?</span></h3>' +
+      '<div class="legend">' + legend + '</div>' +
+      '<div class="ov-bars">' +
+        '<div class="ov-bar-col">' +
+          '<div class="ov-bar-total num">' + fmtPctVal(calc.farBefore*100,2) + '</div>' +
+          buildBar(segBefore) +
+          '<div class="ov-bar-label">적용 전</div>' +
+        '</div>' +
+        '<div class="ov-bar-arrow">' +
+          '<div class="ov-arrow-icon">→</div>' +
+          '<div class="ov-arrow-val num">▲' + fmtNum(farDeltaPct,2) + '%p</div>' +
+        '</div>' +
+        '<div class="ov-bar-col">' +
+          '<div class="ov-bar-total num">' + fmtPctVal(calc.farAfter*100,2) + '</div>' +
+          buildBar(segAfter) +
+          '<div class="ov-bar-label">적용 후</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  const houseHTML =
+    '<div class="ov-card">' +
+      '<h3 class="ov-section-title">세대수 배분 현황<span class="tip-icon" data-tip="계획(원안) 세대수와 보정계수 반영 후 적용 세대수를 비교합니다.">?</span></h3>' +
+      '<div class="ov-house-row-big">' +
+        '<span class="ov-house-row-label">기부형</span>' +
+        '<span class="ov-house-row-nums num">' + fmtInt(donPlan) + ' → <b>' + fmtInt(donHouseholds) + '</b>세대</span>' +
+        deltaBadge(donHouseholds, donPlan) +
+      '</div>' +
+      '<div class="ov-house-bar-track"><div class="ov-house-bar-fill" style="width:' + (donPlan>0?Math.min(donHouseholds/donPlan*100,100):0) + '%;background:#d97a3f;"></div></div>' +
+
+      '<div class="ov-house-row-big">' +
+        '<span class="ov-house-row-label">매입형</span>' +
+        '<span class="ov-house-row-nums num">' + fmtInt(buyPlan) + ' → <b>' + fmtInt(buyHouseholds) + '</b>세대</span>' +
+        deltaBadge(buyHouseholds, buyPlan) +
+      '</div>' +
+      '<div class="ov-house-bar-track"><div class="ov-house-bar-fill" style="width:' + (buyPlan>0?Math.min(buyHouseholds/buyPlan*100,100):0) + '%;background:#7c5cbf;"></div></div>' +
+
+      '<div class="ov-house-row-big">' +
+        '<span class="ov-house-row-label">일반분양</span>' +
+        '<span class="ov-house-row-nums num"><b>' + fmtInt(genHouseholds) + '</b>세대</span>' +
+      '</div>' +
+      '<div class="ov-house-bar-track"><div class="ov-house-bar-fill" style="width:100%;background:#1f8f63;"></div></div>' +
+
+      '<div class="ov-house-total">' +
+        '<span>전체 세대수</span><span class="num">' + fmtInt(calc.totalHouseholds) + '세대</span>' +
+      '</div>' +
+      '<div class="ov-house-total">' +
+        '<span>임대 비율<span class="tip-icon" data-tip="기부형+매입형 임대세대가 전체 세대수에서 차지하는 비율입니다.">?</span></span>' +
+        '<span class="num">' + (calc.totalHouseholds>0 ? fmtNum((donHouseholds+buyHouseholds)/calc.totalHouseholds*100,2)+'%' : '—') + '</span>' +
+      '</div>' +
+    '</div>';
+
+  const conclusionHTML =
+    '<div class="ov-conclusion">' +
+      '<b>결론</b> · 보정계수 <b class="num">' + (calc.correctionFactor!==null?fmtNum(calc.correctionFactor,4):'—') + '</b> 적용 →' +
+      ' 총 용적률 <span class="hl-blue num">' + fmtPctVal(calc.farBefore*100,2) + ' → ' + fmtPctVal(calc.farAfter*100,2) + '</span>' +
+      ' (<span class="hl-blue num">▲' + fmtNum(farDeltaPct,2) + '%p</span>) &nbsp;/&nbsp; ' +
+      '임대(기부형) <span class="hl-red num">' + fmtInt(donPlan) + ' → ' + fmtInt(donHouseholds) + '세대 (' + (donDelta<0?'▼':'▲') + Math.abs(donDelta) + ')</span> · ' +
+      '임대(매입형) <span class="hl-green num">' + fmtInt(buyPlan) + ' → ' + fmtInt(buyHouseholds) + '세대 (' + (buyDelta===0?'동일':((buyDelta<0?'▼':'▲')+Math.abs(buyDelta))) + ')</span>' +
+    '</div>';
+
+  container.innerHTML =
+    stripHTML +
+    '<div class="ov-grid">' +
+      barsHTML +
+      houseHTML +
+    '</div>' +
+    conclusionHTML;
+}
+
+function renderAll(skipFocusedTables) {
+  const calc = calculate();
+  renderChain(calc);
+  renderKPI(calc);
+  renderCFLive(calc);
+  renderOverview(calc);
+
+  if (!skipFocusedTables) {
+    renderZoneTable();
+    renderUnitTable(donationUnits, "donationTableBody", true, true);
+    renderUnitTable(buyUnits, "buyTableBody", true, true);
+    attachUnitListeners(donationUnits, "donationTableBody", function(id){
+      donationUnits = donationUnits.filter(function(u){ return u.id !== id; });
+      autoApplied = false;
+    });
+    attachUnitListeners(buyUnits, "buyTableBody", function(id){
+      buyUnits = buyUnits.filter(function(u){ return u.id !== id; });
+    });
+  } else {
+    updateSubtotalCells(donationUnits, "donationTableBody");
+    updateSubtotalCells(buyUnits, "buyTableBody");
+  }
+
+  renderUnitTable(donationUnits, "resultDonationBody", false, true);
+  renderUnitTable(buyUnits, "resultBuyBody", false, true);
+
+  const dFooter = document.getElementById("donationFooter");
+  dFooter.className = "unit-footer " + (calc.isOK === false ? "footer-warn" : "footer-ok");
+  dFooter.innerHTML =
+    '<span class="num">계획 ' + fmtInt(calc.donationPlanTotal) + '세대 → 적용 ' + fmtInt(calc.donationHouseholdsTotal) + '세대 ' + deltaBadge(calc.donationHouseholdsTotal, calc.donationPlanTotal) + ' · ' + fmtArea(calc.donationAreaCurrentTotal) + '㎡</span>' +
+    '<span class="footer-status num">' +
+    (calc.donationAreaAfter !== null
+      ? '상한 ' + fmtArea(calc.donationAreaAfter) + '㎡ — ' + (calc.isOK ? '✓ OK' : '✕ 초과')
+      : '공시지가 입력 후 판정') +
+    '</span>';
+
+  const rdFooter = document.getElementById("resultDonationFooter");
+  rdFooter.className = "unit-footer " + (calc.isOK === false ? "footer-warn" : "footer-ok");
+  rdFooter.innerHTML = dFooter.innerHTML;
+
+  document.getElementById("autoNote").style.display = autoApplied ? "block" : "none";
+
+  const bFooter = document.getElementById("buyFooter");
+  bFooter.innerHTML =
+    '<span class="num">계획 ' + fmtInt(calc.buyPlanTotal) + '세대 → 적용 ' + fmtInt(calc.buyHouseholdsTotal) + '세대 ' + deltaBadge(calc.buyHouseholdsTotal, calc.buyPlanTotal) + '</span>' +
+    '<span class="footer-status num">매입형 비율 ' + (calc.buyRatio !== null ? fmtPctVal(calc.buyRatio*100) : '—') + '</span>';
+  document.getElementById("resultBuyFooter").innerHTML = bFooter.innerHTML;
+
+  document.getElementById("summaryTableBody").innerHTML =
+    '<tr><td>임대(기부형)</td><td class="num">' + fmtInt(calc.donationHouseholdsTotal) + '</td></tr>' +
+    '<tr><td>임대(매입형)</td><td class="num">' + fmtInt(calc.buyHouseholdsTotal) + '</td></tr>' +
+    '<tr><td>일반분양</td><td class="num">' + fmtInt(calc.generalHouseholdsAfter) + '</td></tr>' +
+    '<tr class="total-row"><td>합계</td><td class="num">' + fmtInt(calc.totalHouseholds) + '</td></tr>';
+
+  document.getElementById("autoSuggestBtn").disabled = (calc.donationAreaAfter === null);
+
+  if (!skipFocusedTables) {
+    const totalArea = zones.reduce(function(s,z){ return s + (z.area||0); }, 0);
+    document.getElementById("zoneTotalArea").textContent = "합계 " + fmtArea(totalArea) + "㎡";
+  }
+}
+
+function updateSubtotalCells(units, bodyId) {
+  units.forEach(function(u){
+    const row = document.querySelector('#' + bodyId + ' tr[data-id="' + u.id + '"]');
+    if (!row) return;
+    const cell = row.children[3];
+    if (cell) cell.textContent = fmtArea((u.count||0)*(u.area||0));
+  });
+  const totalArea = zones.reduce(function(s,z){ return s + (z.area||0); }, 0);
+  const el = document.getElementById("zoneTotalArea");
+  if (el) el.textContent = "합계 " + fmtArea(totalArea) + "㎡";
+}
+
+function resetDonationUnits() {
+  donationUnits = DEFAULT_DONATION_UNITS.map(function(u){ return Object.assign({}, u); });
+  autoApplied = false;
+  renderAll();
+}
+
+function applyAutoSuggest() {
+  const calc = calculate();
+  if (calc.donationAreaAfter === null) return;
+  const target = calc.donationAreaAfter;
+
+  let working = donationUnits.map(function(u){ return Object.assign({}, u); });
+  let total = working.reduce(function(s,u){ return s + (u.count||0)*(u.area||0); }, 0);
+
+  // 라운드로빈 방식으로 모든 타입에서 고르게 1세대씩 순환 차감 (특정 타입 전멸 방지)
+  let guard = 0;
+  let cursor = 0;
+  while (total > target && guard < 5000) {
+    guard++;
+    let reducedThisRound = false;
+    for (let k = 0; k < working.length; k++) {
+      const idx = (cursor + k) % working.length;
+      const u = working[idx];
+      if (u.count > 0 && total > target) {
+        u.count -= 1;
+        total -= (u.area||0);
+        reducedThisRound = true;
+        cursor = (idx + 1) % working.length;
+        break;
+      }
+    }
+    if (!reducedThisRound) break;
+  }
+
+  donationUnits = working;
+  autoApplied = true;
+  renderAll();
+}
+
+SIMPLE_FIELD_IDS.forEach(function(id){
+  const el = document.getElementById(id);
+  el.addEventListener("input", function(e){
+    const caret = e.target.selectionStart;
+    const before = e.target.value.length;
+    const formatted = liveFormat(e.target.value);
+    e.target.value = formatted;
+    const after = formatted.length;
+    const newPos = Math.max(0, caret + (after - before));
+    e.target.setSelectionRange(newPos, newPos);
+    renderAll(true);
+  });
+  if (["publicLand","infraArea","communityArea"].indexOf(id) !== -1) {
+    el.addEventListener("blur", function(e){ formatAreaOnBlur(e.target); renderAll(true); });
+  }
+});
+
+document.getElementById("addZoneBtn").addEventListener("click", addZone);
+document.getElementById("addDonationBtn").addEventListener("click", addDonationType);
+document.getElementById("addBuyBtn").addEventListener("click", addBuyType);
+document.getElementById("autoSuggestBtn").addEventListener("click", applyAutoSuggest);
+document.getElementById("resetDonationBtn").addEventListener("click", resetDonationUnits);
+
+Object.keys(SIMPLE_DEFAULTS).forEach(function(id){
+  document.getElementById(id).value = liveFormat(SIMPLE_DEFAULTS[id]);
+});
+
+renderAll();
+</script>
+</body>
+</html>
