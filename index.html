@@ -580,18 +580,18 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
             </div>
           </div>
           <table class="dtable">
-            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 전용면적(㎡)입니다.">전용면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 전용면적의 소계입니다.">소계면적(㎡)</th><th class="del-col"></th></tr></thead>
+            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 공급면적(㎡)입니다.">공급면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 공급면적의 소계입니다.">소계면적(㎡)</th><th class="del-col"></th></tr></thead>
             <tbody id="donationTableBody"></tbody>
           </table>
           <button class="btn btn-add btn-sm" id="addDonationBtn">+ 타입 추가</button>
           <div class="unit-footer" id="donationFooter"></div>
-          <p class="auto-note" id="autoNote" style="display:none;">자동제안이 적용된 배분입니다 — 실제 평면 설계에 맞춰 자유롭게 조정하세요.</p>
+          <p class="auto-note" id="autoNote" style="display:none;">최소 의무면적을 충족하는 선에서 세대수를 최대한 줄인 제안입니다 — 실제 평면 설계에 맞춰 자유롭게 조정하세요.</p>
         </div>
 
         <div class="block">
           <div class="unit-head"><h3 style="font-size:.86rem;font-weight:700;color:var(--navy);margin:0;">임대(매입형) 타입별 세대수</h3></div>
           <table class="dtable">
-            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 전용면적(㎡)입니다.">전용면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 전용면적의 소계입니다.">소계면적(㎡)</th><th class="del-col"></th></tr></thead>
+            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 공급면적(㎡)입니다.">공급면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 공급면적의 소계입니다.">소계면적(㎡)</th><th class="del-col"></th></tr></thead>
             <tbody id="buyTableBody"></tbody>
           </table>
           <button class="btn btn-add btn-sm" id="addBuyBtn">+ 타입 추가</button>
@@ -628,7 +628,7 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
         <div class="unit-section">
           <div class="unit-head"><h3 style="font-size:.86rem;font-weight:700;color:var(--navy);margin:0;">임대(기부형)</h3></div>
           <table class="dtable">
-            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 전용면적(㎡)입니다.">전용면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 전용면적의 소계입니다.">소계면적(㎡)</th></tr></thead>
+            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 공급면적(㎡)입니다.">공급면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 공급면적의 소계입니다.">소계면적(㎡)</th></tr></thead>
             <tbody id="resultDonationBody"></tbody>
           </table>
           <div class="unit-footer" id="resultDonationFooter"></div>
@@ -636,7 +636,7 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
         <div class="unit-section">
           <div class="unit-head"><h3 style="font-size:.86rem;font-weight:700;color:var(--navy);margin:0;">임대(매입형)</h3></div>
           <table class="dtable">
-            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 전용면적(㎡)입니다.">전용면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 전용면적의 소계입니다.">소계면적(㎡)</th></tr></thead>
+            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 공급면적(㎡)입니다.">공급면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 공급면적의 소계입니다.">소계면적(㎡)</th></tr></thead>
             <tbody id="resultBuyBody"></tbody>
           </table>
           <div class="unit-footer footer-ok" id="resultBuyFooter"></div>
@@ -802,7 +802,7 @@ function calculate() {
     : null;
 
   const donationAreaCurrentTotal = donationUnits.reduce(function(s,u){ return s + (u.count||0)*(u.area||0); }, 0);
-  const isOK = donationAreaAfter !== null ? donationAreaCurrentTotal <= donationAreaAfter : null;
+  const isOK = donationAreaAfter !== null ? donationAreaCurrentTotal >= donationAreaAfter : null;
   const generalHouseholdsAfter = totalHouseholds - donationHouseholdsTotal - buyHouseholdsTotal;
 
   const buyBonusBefore = buyRatio !== null ? buyRatio*2.5*100 : null;
@@ -887,7 +887,7 @@ function renderChain(calc) {
       calc.donationAreaAfter !== null ? fmtArea(calc.donationAreaAfter) + "㎡" : "—",
       calc.donationAreaBefore !== null ? "보정 전 " + fmtArea(calc.donationAreaBefore) + "㎡ → 보정 후" : null,
       true, null,
-      "타입별 세대수의 합산 면적이 넘지 않아야 하는 기부채납 임대주택의 상한면적입니다."),
+      "타입별 세대수의 합산 면적이 이 값 이상이 되어야 하는 기부채납 임대주택의 최소 의무면적입니다."),
     chainStepHTML("7","용적률 산정 (적용 전 → 후)",
       "완화기준 + 매입형비율×2.5×보정계수 + 공동이용시설보너스",
       (calc.farBefore !== null && calc.farAfter !== null)
@@ -928,9 +928,9 @@ function renderKPI(calc) {
       tip:"보정계수 적용 전과 후, 통합심의 총 용적률의 변화 폭입니다." },
     { label:"임대(기부형) 세대 증감", value: deltaText + "  (" + fmtInt(calc.donationPlanTotal) + "→" + fmtInt(calc.donationHouseholdsTotal) + ")", cls: deltaCls,
       tip:"계획(원안) 대비 보정계수를 반영해 현재 입력된 기부형 임대 세대수의 변화입니다." },
-    { label:"현재 배분 상태", value: calc.isOK === null ? "—" : (calc.isOK ? "OK" : "초과"),
+    { label:"현재 배분 상태", value: calc.isOK === null ? "—" : (calc.isOK ? "OK" : "미달"),
       cls: calc.isOK === false ? "kpi-warn" : (calc.isOK === true ? "kpi-ok" : ""),
-      tip:"입력된 기부형 타입별 세대수의 합산 면적이 보정 후 상한면적 이하인지 여부입니다." }
+      tip:"입력된 기부형 타입별 세대수의 합산 면적이 보정 후 최소 의무면적 이상인지 여부입니다." }
   ];
   const html = items.map(function(it){
     return '<div class="kpi ' + it.cls + '">' +
@@ -1018,12 +1018,12 @@ function unitRowHTML(u, editable, showPlan) {
       ? '<td><input type="text" inputmode="numeric" class="cell-input w-count" data-field="planCount" data-id="' + u.id + '" value="' + liveFormat(u.planCount) + '" /></td>'
       : '';
     const applyCell = '<td><input type="text" inputmode="numeric" class="cell-input w-count" data-field="count" data-id="' + u.id + '" value="' + liveFormat(u.count) + '" /></td>';
-    const deltaCell = showPlan ? '<td class="num">' + deltaBadge(u.count, u.planCount) + '</td>' : '';
+    const deltaCell = showPlan ? '<td class="num delta-cell">' + deltaBadge(u.count, u.planCount) + '</td>' : '';
     return '<tr data-id="' + u.id + '">' +
       '<td><input type="text" class="cell-input w-name" data-field="name" data-id="' + u.id + '" value="' + (u.name||"") + '" /></td>' +
       '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="area" data-id="' + u.id + '" data-kind="area" value="' + liveFormat(u.area) + '" /></td>' +
       planCell + applyCell + deltaCell +
-      '<td class="num">' + fmtArea((u.count||0)*(u.area||0)) + '</td>' +
+      '<td class="num subtotal-cell">' + fmtArea((u.count||0)*(u.area||0)) + '</td>' +
       '<td class="del-col"><button class="btn-del" data-id="' + u.id + '" title="삭제">×</button></td>' +
       '</tr>';
   } else {
@@ -1035,7 +1035,7 @@ function unitRowHTML(u, editable, showPlan) {
       planCell +
       '<td class="num">' + fmtInt(u.count) + '</td>' +
       deltaCell +
-      '<td class="num">' + fmtArea((u.count||0)*(u.area||0)) + '</td>' +
+      '<td class="num subtotal-cell">' + fmtArea((u.count||0)*(u.area||0)) + '</td>' +
       '</tr>';
   }
 }
@@ -1275,8 +1275,8 @@ function renderAll(skipFocusedTables) {
       buyUnits = buyUnits.filter(function(u){ return u.id !== id; });
     });
   } else {
-    updateSubtotalCells(donationUnits, "donationTableBody");
-    updateSubtotalCells(buyUnits, "buyTableBody");
+    updateSubtotalCells(donationUnits, "donationTableBody", true);
+    updateSubtotalCells(buyUnits, "buyTableBody", true);
   }
 
   renderUnitTable(donationUnits, "resultDonationBody", false, true);
@@ -1288,7 +1288,7 @@ function renderAll(skipFocusedTables) {
     '<span class="num">계획 ' + fmtInt(calc.donationPlanTotal) + '세대 → 적용 ' + fmtInt(calc.donationHouseholdsTotal) + '세대 ' + deltaBadge(calc.donationHouseholdsTotal, calc.donationPlanTotal) + ' · ' + fmtArea(calc.donationAreaCurrentTotal) + '㎡</span>' +
     '<span class="footer-status num">' +
     (calc.donationAreaAfter !== null
-      ? '상한 ' + fmtArea(calc.donationAreaAfter) + '㎡ — ' + (calc.isOK ? '✓ OK' : '✕ 초과')
+      ? '최소 의무면적 ' + fmtArea(calc.donationAreaAfter) + '㎡ — ' + (calc.isOK ? '✓ OK' : '✕ 미달')
       : '공시지가 입력 후 판정') +
     '</span>';
 
@@ -1318,12 +1318,16 @@ function renderAll(skipFocusedTables) {
   }
 }
 
-function updateSubtotalCells(units, bodyId) {
+function updateSubtotalCells(units, bodyId, showPlan) {
   units.forEach(function(u){
     const row = document.querySelector('#' + bodyId + ' tr[data-id="' + u.id + '"]');
     if (!row) return;
-    const cell = row.children[3];
-    if (cell) cell.textContent = fmtArea((u.count||0)*(u.area||0));
+    const subtotalCell = row.querySelector('td.subtotal-cell');
+    if (subtotalCell) subtotalCell.textContent = fmtArea((u.count||0)*(u.area||0));
+    if (showPlan) {
+      const deltaCell = row.querySelector('td.delta-cell');
+      if (deltaCell) deltaCell.innerHTML = deltaBadge(u.count, u.planCount);
+    }
   });
   const totalArea = zones.reduce(function(s,z){ return s + (z.area||0); }, 0);
   const el = document.getElementById("zoneTotalArea");
@@ -1344,21 +1348,25 @@ function applyAutoSuggest() {
   let working = donationUnits.map(function(u){ return Object.assign({}, u); });
   let total = working.reduce(function(s,u){ return s + (u.count||0)*(u.area||0); }, 0);
 
-  // 라운드로빈 방식으로 모든 타입에서 고르게 1세대씩 순환 차감 (특정 타입 전멸 방지)
+  // 최소 의무면적(target) 이상을 유지하는 선에서, 가능한 한 세대수를 줄여 사업성을 개선
+  // 라운드로빈으로 1세대씩 시험 차감 — 차감 후에도 target 이상이면 적용, target 미만이 되면 그 시도는 취소하고 종료
   let guard = 0;
   let cursor = 0;
-  while (total > target && guard < 5000) {
+  while (guard < 5000) {
     guard++;
     let reducedThisRound = false;
     for (let k = 0; k < working.length; k++) {
       const idx = (cursor + k) % working.length;
       const u = working[idx];
-      if (u.count > 0 && total > target) {
-        u.count -= 1;
-        total -= (u.area||0);
-        reducedThisRound = true;
-        cursor = (idx + 1) % working.length;
-        break;
+      if (u.count > 0) {
+        const nextTotal = total - (u.area||0);
+        if (nextTotal >= target) {
+          u.count -= 1;
+          total = nextTotal;
+          reducedThisRound = true;
+          cursor = (idx + 1) % working.length;
+          break;
+        }
       }
     }
     if (!reducedThisRound) break;
