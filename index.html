@@ -54,6 +54,28 @@ body{ margin:0; font-family:var(--font); }
 }
 .tab-btn:hover{ color:#cfd5e0; }
 .tab-btn.active{ color:#fff; border-bottom-color:var(--copper); }
+
+.json-bar{
+  display:flex; align-items:center; gap:.4rem; margin-left:auto; padding:.4rem 0 .4rem .6rem;
+  border-left:1px solid rgba(255,255,255,0.1);
+}
+.json-btn{
+  font-family:var(--font); font-size:.74rem; font-weight:600; cursor:pointer;
+  padding:.38rem .75rem; border-radius:5px; border:1.5px solid rgba(255,255,255,0.22);
+  background:rgba(255,255,255,0.07); color:#cfd5e0;
+  transition:background .12s, color .12s, border-color .12s;
+  white-space:nowrap; display:flex; align-items:center;
+}
+.json-btn:hover{ background:rgba(255,255,255,0.15); color:#fff; border-color:rgba(255,255,255,0.4); }
+.json-btn-load{ border-color:rgba(189,107,62,0.5); color:var(--copper); background:rgba(189,107,62,0.08); }
+.json-btn-load:hover{ background:rgba(189,107,62,0.2); color:#e8904e; border-color:var(--copper); }
+.json-toast{
+  font-size:.72rem; font-weight:600; padding:.28rem .6rem; border-radius:4px;
+  background:var(--ok); color:#fff; opacity:0;
+  transition:opacity .25s; white-space:nowrap; pointer-events:none;
+}
+.json-toast.show{ opacity:1; }
+.json-toast.err{ background:var(--warn); }
 .tab-num{
   font-size:.65rem; font-weight:700; width:1.3rem; height:1.3rem; border-radius:50%;
   background:#2a3850; color:#9aa6c2; display:flex; align-items:center; justify-content:center;
@@ -503,16 +525,24 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
       <button class="tab-btn" data-tab="tab-calc"><span class="tab-num">2</span>계산</button>
       <button class="tab-btn" data-tab="tab-result"><span class="tab-num">3</span>결과요약</button>
       <button class="tab-btn" data-tab="tab-overview"><span class="tab-num">4</span>총괄보기</button>
+      <div class="json-bar">
+        <button class="json-btn" id="jsonSaveBtn" title="현재 입력값 전체를 JSON 파일로 저장합니다">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-.15em;margin-right:.3rem;"><path d="M8 1v9M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>저장
+        </button>
+        <button class="json-btn json-btn-load" id="jsonLoadBtn" title="저장된 JSON 파일을 불러와 입력값을 복원합니다">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-.15em;margin-right:.3rem;"><path d="M8 15V6M4 10l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 3h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>불러오기
+        </button>
+        <input type="file" id="jsonFileInput" accept=".json" style="display:none;"/>
+        <span class="json-toast" id="jsonToast"></span>
+      </div>
     </nav>
   </header>
 
   <section class="tab-panel active" id="tab-input">
     <div class="cols-2">
-      <!-- ── 좌측 열: 공시지가 · 용도지역 · 정비기반시설 · 손실보상 ── -->
       <div class="panel">
-        <h2 class="panel-title">공시지가 · 용도지역 · 정비기반시설 · 손실보상</h2>
+        <h2 class="panel-title">공시지가 · 용도지역</h2>
 
-        <!-- 공시지가 -->
         <div class="block block-highlight">
           <div class="block-head">
             <h3>공시지가</h3>
@@ -545,29 +575,17 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
               <span class="nf-hint" id="seoulPriceSourceNote"></span>
             </label>
             <label class="nf">
-              <span class="nf-label tip" data-tip="사업시행구역 내 모든 용도지역 대지(지목)의 면적 가중평균 공시지가입니다. 보정계수(K3) 산정에 사용됩니다.">사업지 평균 공시지가</span>
+              <span class="nf-label tip" data-tip="사업시행구역 내 모든 용도지역 대지(지목)의 면적 가중평균 공시지가입니다.">사업지 평균 공시지가</span>
               <div class="nf-input-wrap nf-accent">
                 <input type="text" inputmode="decimal" id="sitePrice" placeholder="예: 4,577,100" />
                 <span class="nf-suffix">원/㎡</span>
               </div>
-              <span class="nf-hint">보정계수 K3 = MIN(서울시 평균 ÷ 사업지 평균, 1.5)</span>
+              <span class="nf-hint">면적 가중평균 기준 · 손실보상 토지환산에도 동일값 적용</span>
             </label>
-          </div>
-          <div class="field-row" style="margin-top:.5rem;">
-            <label class="nf">
-              <span class="nf-label tip" data-tip="손실보상 토지환산 전용 공시지가입니다. 보정계수 산정에 쓰이는 사업지 평균 공시지가와 다를 수 있습니다.&#10;Q14 = 손실보상액 ÷ (이 공시지가 × 2)">손실보상 토지환산용 공시지가<span class="tip-icon" data-tip="엑셀 Q12. 보정계수 산정에 사용되는 사업지 평균 공시지가(N13)와 별도로 입력합니다.">?</span></span>
-              <div class="nf-input-wrap nf-accent">
-                <input type="text" inputmode="decimal" id="compPrice" placeholder="예: 4,161,000" />
-                <span class="nf-suffix">원/㎡</span>
-              </div>
-              <span class="nf-hint">손실보상액 토지환산 전용 — N13과 다를 경우 별도 입력</span>
-            </label>
-            <div></div>
           </div>
           <div class="cf-live" id="cfLive"></div>
         </div>
 
-        <!-- 대지 · 용도지역 -->
         <div class="block">
           <div class="block-head">
             <h3>대지 · 용도지역</h3>
@@ -587,7 +605,6 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
           <button class="btn btn-add btn-sm" id="addZoneBtn">+ 용도지역 추가</button>
         </div>
 
-        <!-- 기준용적률 · 세대수 -->
         <div class="block">
           <div class="field-row">
             <label class="nf">
@@ -595,22 +612,25 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
               <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="targetFAR" /><span class="nf-suffix">%</span></div>
             </label>
             <label class="nf">
-              <span class="nf-label">계획 세대수(전체)<span class="tip-icon" data-tip="기부형·매입형 임대주택과 일반분양을 포함한 사업 전체 계획 세대수입니다.">?</span></span>
+              <span class="nf-label">계획 세대수(전체)<span class="tip-icon" data-tip="기부형·매입형 임대주택과 일반분양을 포함한 사업 전체 계획 세대수입니다. 아래 세대수 입력 합계와 일치해야 합니다.">?</span></span>
               <div class="nf-input-wrap"><input type="text" inputmode="numeric" id="totalHouseholds" /><span class="nf-suffix">세대</span></div>
             </label>
           </div>
+          <div id="totalMismatchWarn" style="display:none;margin-top:.5rem;padding:.5rem .75rem;background:var(--warn-soft);color:var(--warn);border-radius:6px;font-size:.76rem;font-weight:600;line-height:1.5;border-left:3px solid var(--warn);"></div>
         </div>
+      </div>
 
-        <!-- 정비기반시설 · 손실보상 -->
+      <div class="panel">
+        <h2 class="panel-title">정비기반시설 · 손실보상</h2>
         <div class="block">
-          <div class="block-head"><h3>정비기반시설 · 손실보상<span class="tip-icon" data-tip="정비기반시설 순부담 비율(α)과 세입자 손실보상액이 완화용적률 및 기부채납 임대주택 의무면적 산정에 반영됩니다.">?</span></h3></div>
+          <div class="block-head"><h3>정비기반 · 공동이용시설</h3></div>
           <div class="field-row">
             <label class="nf">
-              <span class="nf-label">현황 국공유지 면적<span class="tip-icon" data-tip="사업구역 내 현재 국가 또는 지자체가 소유한 토지 면적입니다. 정비기반시설 순부담 계산 시 차감됩니다.&#10;α = (정비기반시설 설치면적 − 국공유지 면적) ÷ 대지면적">?</span></span>
+              <span class="nf-label">현황 국공유지 면적<span class="tip-icon" data-tip="사업구역 내 현재 국가 또는 지자체가 소유한 토지 면적입니다. 정비기반시설 순부담 계산 시 차감됩니다.">?</span></span>
               <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="publicLand" /><span class="nf-suffix">㎡</span></div>
             </label>
             <label class="nf">
-              <span class="nf-label">정비기반시설 설치면적<span class="tip-icon" data-tip="도로, 공원 등 사업으로 새로 설치·기부채납하는 정비기반시설의 전체 면적입니다.&#10;순부담 = 설치면적 − 국공유지 면적">?</span></span>
+              <span class="nf-label">정비기반시설 설치면적<span class="tip-icon" data-tip="도로, 공원 등 사업으로 새로 설치·기부채납하는 정비기반시설의 전체 면적입니다.">?</span></span>
               <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="infraArea" /><span class="nf-suffix">㎡</span></div>
             </label>
           </div>
@@ -620,17 +640,22 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
               <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="communityArea" /><span class="nf-suffix">㎡</span></div>
             </label>
             <label class="nf">
-              <span class="nf-label">세입자 손실보상액<span class="tip-icon" data-tip="영업·주거 세입자에게 지급하는 손실보상 총액입니다.&#10;토지환산 = 손실보상액 ÷ (손실보상 토지환산용 공시지가 × 2)&#10;환산된 토지면적 비율만큼 임대주택 의무비율에서 차감됩니다.">?</span></span>
+              <span class="nf-label">세입자 손실보상액<span class="tip-icon" data-tip="영업·주거 세입자에게 지급하는 손실보상 총액입니다. 토지면적으로 환산되어 임대주택 의무비율에서 일부 차감됩니다.">?</span></span>
               <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="compensationAmt" /><span class="nf-suffix">원</span></div>
             </label>
           </div>
         </div>
 
-      </div><!-- /좌측 패널 끝 -->
-
-      <!-- ── 우측 열: 임대·분양 세대수 ── -->
-      <div class="panel">
-        <h2 class="panel-title">세대수 배분</h2>
+        <div class="block">
+          <div class="unit-head"><h3 style="font-size:.86rem;font-weight:700;color:var(--navy);margin:0;">일반분양 타입별 세대수<span class="tip-icon" data-tip="타입명·공급면적은 여기서 입력하면 임대(기부형)·임대(매입형)에도 공통 적용됩니다. 기부형·매입형에서 줄어든 세대수가 같은 타입의 분양 세대수에 자동으로 더해집니다.">?</span></h3>
+          <span style="font-size:.72rem;color:var(--copper-deep);font-weight:600;">★ 타입명·공급면적 마스터 — 임대 테이블에 공통 적용</span></div>
+          <table class="dtable">
+            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 공급면적(㎡)입니다.">공급면적(㎡)</th><th class="num-col" title="기부형·매입형 연동 적용 전, 원래 계획했던 분양 세대수입니다. 직접 수정 가능합니다.">기준(계획)</th><th class="num-col" title="기부형·매입형에서 같은 타입명으로 줄어든 세대수가 자동으로 더해진 값입니다.">연동적용</th><th class="num-col" title="기준 대비 연동적용의 증감입니다.">증감</th><th class="num-col" title="연동적용 세대수 × 공급면적의 소계입니다.">소계면적(㎡)</th><th class="del-col"></th></tr></thead>
+            <tbody id="saleTableBody"></tbody>
+          </table>
+          <button class="btn btn-add btn-sm" id="addSaleBtn">+ 타입 추가</button>
+          <div class="unit-footer" id="saleFooter"></div>
+        </div>
 
         <div class="block">
           <div class="unit-head">
@@ -641,7 +666,7 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
             </div>
           </div>
           <table class="dtable">
-            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 공급면적(㎡)입니다.">공급면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 공급면적의 소계입니다.">소계면적(㎡)</th><th class="del-col"></th></tr></thead>
+            <thead><tr><th title="일반분양 타입 마스터에서 공통 적용됩니다.">타입명<span style="font-size:.6rem;color:var(--copper-deep);margin-left:.2rem;">(공통)</span></th><th class="num-col" title="일반분양 마스터에서 설정한 공급면적이 자동 적용됩니다.">공급면적(㎡)<span style="font-size:.6rem;color:var(--copper-deep);margin-left:.2rem;">(공통)</span></th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 공급면적의 소계입니다.">소계면적(㎡)</th><th class="del-col"></th></tr></thead>
             <tbody id="donationTableBody"></tbody>
           </table>
           <button class="btn btn-add btn-sm" id="addDonationBtn">+ 타입 추가</button>
@@ -652,24 +677,14 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
         <div class="block">
           <div class="unit-head"><h3 style="font-size:.86rem;font-weight:700;color:var(--navy);margin:0;">임대(매입형) 타입별 세대수</h3></div>
           <table class="dtable">
-            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 공급면적(㎡)입니다.">공급면적(㎡)</th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 공급면적의 소계입니다.">소계면적(㎡)</th><th class="del-col"></th></tr></thead>
+            <thead><tr><th title="일반분양 타입 마스터에서 공통 적용됩니다.">타입명<span style="font-size:.6rem;color:var(--copper-deep);margin-left:.2rem;">(공통)</span></th><th class="num-col" title="일반분양 마스터에서 설정한 공급면적이 자동 적용됩니다.">공급면적(㎡)<span style="font-size:.6rem;color:var(--copper-deep);margin-left:.2rem;">(공통)</span></th><th class="num-col" title="보정계수 적용 전, 원래 계획했던 세대수입니다. 직접 수정 가능합니다.">계획(원안)</th><th class="num-col" title="보정계수를 반영해 현재 적용하는 세대수입니다.">보정 적용</th><th class="num-col" title="계획(원안) 대비 보정 적용 세대수의 증감입니다.">증감</th><th class="num-col" title="보정 적용 세대수 × 공급면적의 소계입니다.">소계면적(㎡)</th><th class="del-col"></th></tr></thead>
             <tbody id="buyTableBody"></tbody>
           </table>
           <button class="btn btn-add btn-sm" id="addBuyBtn">+ 타입 추가</button>
           <div class="unit-footer footer-ok" id="buyFooter"></div>
         </div>
-
-        <div class="block">
-          <div class="unit-head"><h3 style="font-size:.86rem;font-weight:700;color:var(--navy);margin:0;">일반분양 타입별 세대수<span class="tip-icon" data-tip="기부형·매입형에서 줄어든 세대수가 같은 타입명의 분양 세대수에 자동으로 더해집니다(연동적용). '기준(계획)'만 직접 입력하면 됩니다.">?</span></h3></div>
-          <table class="dtable">
-            <thead><tr><th>타입명</th><th class="num-col" title="해당 타입의 공급면적(㎡)입니다.">공급면적(㎡)</th><th class="num-col" title="기부형·매입형 연동 적용 전, 원래 계획했던 분양 세대수입니다. 직접 수정 가능합니다.">기준(계획)</th><th class="num-col" title="기부형·매입형에서 같은 타입명으로 줄어든 세대수가 자동으로 더해진 값입니다.">연동적용</th><th class="num-col" title="기준 대비 연동적용의 증감입니다.">증감</th><th class="num-col" title="연동적용 세대수 × 공급면적의 소계입니다.">소계면적(㎡)</th><th class="del-col"></th></tr></thead>
-            <tbody id="saleTableBody"></tbody>
-          </table>
-          <button class="btn btn-add btn-sm" id="addSaleBtn">+ 타입 추가</button>
-          <div class="unit-footer" id="saleFooter"></div>
-        </div>
-      </div><!-- /우측 패널 끝 -->
-    </div><!-- /cols-2 끝 -->
+      </div>
+    </div>
   </section>
 
   <section class="tab-panel" id="tab-calc">
@@ -797,46 +812,53 @@ let zones = [
   { id: nextId(), name: "2종일반주거지역", area: 4586.32, farPct: 200 },
 ];
 
-const DEFAULT_DONATION_UNITS = [
-  { id: "d1", name: "44A", area: 63.8550, planCount: 2, count: 2 },
-  { id: "d2", name: "44B", area: 64.3930, planCount: 2, count: 2 },
-  { id: "d3", name: "59A", area: 85.9489, planCount: 24, count: 24 },
-  { id: "d4", name: "59B", area: 86.3285, planCount: 24, count: 24 },
-  { id: "d5", name: "59C", area: 84.1189, planCount: 12, count: 12 },
-  { id: "d6", name: "59D", area: 85.4207, planCount: 4, count: 4 },
-  { id: "d7", name: "84A", area: 118.6246, planCount: 3, count: 3 },
-  { id: "d8", name: "84B", area: 119.0234, planCount: 3, count: 3 },
-];
-const DEFAULT_BUY_UNITS = [
-  { id: "b1", name: "44A", area: 63.8550, planCount: 14, count: 14 },
-  { id: "b2", name: "44B", area: 64.3930, planCount: 6, count: 6 },
-  { id: "b3", name: "59A", area: 85.9489, planCount: 14, count: 14 },
-  { id: "b4", name: "59B", area: 86.3285, planCount: 14, count: 14 },
-  { id: "b5", name: "59C", area: 84.1189, planCount: 6, count: 6 },
-  { id: "b6", name: "59D", area: 85.4207, planCount: 2, count: 2 },
-];
 const DEFAULT_SALE_UNITS = [
-  { id: "s1", name: "44A", area: 63.8550, baseCount: 25 },
-  { id: "s2", name: "44B", area: 64.3930, baseCount: 6 },
-  { id: "s3", name: "59A", area: 85.9489, baseCount: 145 },
-  { id: "s4", name: "59B", area: 86.3285, baseCount: 29 },
-  { id: "s5", name: "59C", area: 84.1189, baseCount: 93 },
-  { id: "s6", name: "59D", area: 85.4207, baseCount: 18 },
-  { id: "s7", name: "84A", area: 118.6246, baseCount: 90 },
-  { id: "s8", name: "84B", area: 119.0234, baseCount: 20 },
+  { id: "t1", name: "44A", area: 63.8550, baseCount: 25 },
+  { id: "t2", name: "44B", area: 64.3930, baseCount: 6 },
+  { id: "t3", name: "59A", area: 85.9489, baseCount: 145 },
+  { id: "t4", name: "59B", area: 86.3285, baseCount: 29 },
+  { id: "t5", name: "59C", area: 84.1189, baseCount: 93 },
+  { id: "t6", name: "59D", area: 85.4207, baseCount: 18 },
+  { id: "t7", name: "84A", area: 118.6246, baseCount: 90 },
+  { id: "t8", name: "84B", area: 119.0234, baseCount: 20 },
 ];
 
+// 기부형/매입형은 typeId + 세대수만 관리 (타입명·면적은 saleUnits에서 참조)
+const DEFAULT_DONATION_UNITS = [
+  { id: "d1", typeId: "t1", planCount: 2,  count: 2  },
+  { id: "d2", typeId: "t2", planCount: 2,  count: 2  },
+  { id: "d3", typeId: "t3", planCount: 24, count: 24 },
+  { id: "d4", typeId: "t4", planCount: 24, count: 24 },
+  { id: "d5", typeId: "t5", planCount: 12, count: 12 },
+  { id: "d6", typeId: "t6", planCount: 4,  count: 4  },
+  { id: "d7", typeId: "t7", planCount: 3,  count: 3  },
+  { id: "d8", typeId: "t8", planCount: 3,  count: 3  },
+];
+const DEFAULT_BUY_UNITS = [
+  { id: "b1", typeId: "t1", planCount: 14, count: 14 },
+  { id: "b2", typeId: "t2", planCount: 6,  count: 6  },
+  { id: "b3", typeId: "t3", planCount: 14, count: 14 },
+  { id: "b4", typeId: "t4", planCount: 14, count: 14 },
+  { id: "b5", typeId: "t5", planCount: 6,  count: 6  },
+  { id: "b6", typeId: "t6", planCount: 2,  count: 2  },
+];
+
+// typeId → {name, area} 조회 헬퍼
+function getType(typeId) {
+  return saleUnits.find(function(t){ return t.id === typeId; }) || { name: "—", area: 0 };
+}
+
+let saleUnits = DEFAULT_SALE_UNITS.map(function(u){ return Object.assign({}, u); });
 let donationUnits = DEFAULT_DONATION_UNITS.map(function(u){ return Object.assign({}, u); });
 let buyUnits = DEFAULT_BUY_UNITS.map(function(u){ return Object.assign({}, u); });
-let saleUnits = DEFAULT_SALE_UNITS.map(function(u){ return Object.assign({}, u); });
 let autoApplied = false;
 
 const SIMPLE_FIELD_IDS = [
-  "seoulPrice","sitePrice","compPrice","targetFAR","totalHouseholds",
+  "seoulPrice","sitePrice","targetFAR","totalHouseholds",
   "publicLand","infraArea","communityArea","compensationAmt"
 ];
 const SIMPLE_DEFAULTS = {
-  seoulPrice: 6302982, sitePrice: 4577100, compPrice: 4161000,
+  seoulPrice: 6302982, sitePrice: 4577100,
   targetFAR: 250, totalHouseholds: 556,
   publicLand: 528, infraArea: 2032.71, communityArea: 912.67,
   compensationAmt: 6289566541
@@ -850,7 +872,6 @@ function getFieldVal(id) {
 function calculate() {
   const seoulPrice = getFieldVal("seoulPrice");
   const sitePrice = getFieldVal("sitePrice");
-  const compPrice = getFieldVal("compPrice");          // Q12: 손실보상 토지환산 전용 공시지가
   const targetFARPct = getFieldVal("targetFAR") || 0;
   const targetFAR = targetFARPct / 100;
   const totalHouseholds = getFieldVal("totalHouseholds") || 0;
@@ -867,18 +888,13 @@ function calculate() {
   const alpha = landArea > 0 ? netBurden / landArea : null;
   const relaxedBaseFAR = alpha !== null ? targetFAR * (1 + 1.3 * alpha) : null;
 
-  // 보정계수: N12(서울시) / N13(사업지 평균) — sitePrice 사용
   const hasPrices = seoulPrice !== null && sitePrice !== null && sitePrice > 0;
   const rawRatio = hasPrices ? seoulPrice / sitePrice : null;
   const correctionFactor = hasPrices ? Math.min(rawRatio, 1.5) : null;
   const isCapped = hasPrices ? rawRatio >= 1.5 : false;
 
-  // 손실보상 토지환산: Q12(손실보상 전용 공시지가) 사용 — sitePrice와 별도
-  const hasCompPrice = compPrice !== null && compPrice > 0;
-  // Q14 = Q11 / (Q12 * 2)
-  const compLandArea = hasCompPrice ? compensationAmt / (compPrice * 2) : null;
-  // Q13 = E7 * (1 + 0.7 * (Q14/E3)) - E7
   const baseFARRounded = baseFAR !== null ? Math.round(baseFAR * 10000) / 10000 : null;
+  const compLandArea = hasPrices && sitePrice > 0 ? compensationAmt / (sitePrice * 2) : null;
   const lossCompRatio = (compLandArea !== null && baseFARRounded !== null && landArea > 0)
     ? baseFARRounded * (1 + 0.7 * (compLandArea / landArea)) - baseFARRounded
     : null;
@@ -891,6 +907,10 @@ function calculate() {
   const donationPlanTotal = donationUnits.reduce(function(s,u){ return s + (u.planCount||0); }, 0);
   const donationDelta = donationHouseholdsTotal - donationPlanTotal;
   const buyRatio = totalHouseholds > 0 ? Math.floor((buyHouseholdsTotal/totalHouseholds)*100)/100 : null;
+
+  const donationAreaCurrentTotal = donationUnits.reduce(function(s,u){
+    var t = getType(u.typeId); return s + (u.count||0)*(t.area||0);
+  }, 0);
 
   const donationAreaBefore = (baseFAR !== null && lossCompRatio !== null && landArea > 0)
     ? Math.floor(landArea * ((targetFAR - baseFAR)/2 - lossCompRatio) * 10000) / 10000
@@ -906,24 +926,23 @@ function calculate() {
     ? Math.floor((relaxedBaseFAR + buyRatio*2.5*correctionFactor + communityBonusFAR) * 10000) / 10000
     : null;
 
-  const donationAreaCurrentTotal = donationUnits.reduce(function(s,u){ return s + (u.count||0)*(u.area||0); }, 0);
   const isOK = donationAreaAfter !== null ? donationAreaCurrentTotal >= donationAreaAfter : null;
   const generalHouseholdsAfter = totalHouseholds - donationHouseholdsTotal - buyHouseholdsTotal;
   const generalHouseholdsPlan = totalHouseholds - donationPlanTotal - buyPlanTotal;
   const generalDelta = generalHouseholdsAfter - generalHouseholdsPlan;
 
-  // ── 타입명별 연동: 기부형·매입형에서 줄어든(plan-count) 세대수만큼 같은 타입명의 분양 세대수에 가산 ──
+  // ── 타입별 연동: 기부형·매입형에서 줄어든 세대수만큼 같은 typeId의 분양 세대수에 가산 ──
   const typeDeltaMap = {};
   donationUnits.forEach(function(u){
-    const d = (u.planCount||0) - (u.count||0); // 양수면 줄어든 만큼
-    if (d !== 0) typeDeltaMap[u.name] = (typeDeltaMap[u.name]||0) + d;
+    const d = (u.planCount||0) - (u.count||0);
+    if (d !== 0) typeDeltaMap[u.typeId] = (typeDeltaMap[u.typeId]||0) + d;
   });
   buyUnits.forEach(function(u){
     const d = (u.planCount||0) - (u.count||0);
-    if (d !== 0) typeDeltaMap[u.name] = (typeDeltaMap[u.name]||0) + d;
+    if (d !== 0) typeDeltaMap[u.typeId] = (typeDeltaMap[u.typeId]||0) + d;
   });
   const saleUnitsLinked = saleUnits.map(function(u){
-    const linkedCount = (u.baseCount||0) + (typeDeltaMap[u.name]||0);
+    const linkedCount = (u.baseCount||0) + (typeDeltaMap[u.id]||0);
     return Object.assign({}, u, { linkedCount: linkedCount });
   });
   const saleTypedTotal = saleUnitsLinked.reduce(function(s,u){ return s + (u.linkedCount||0); }, 0);
@@ -934,9 +953,12 @@ function calculate() {
   const buyBonusAfter = (buyRatio !== null && correctionFactor !== null) ? buyRatio*2.5*correctionFactor*100 : null;
   const communityBonusPct = communityBonusFAR !== null ? communityBonusFAR*100 : null;
 
+  const computedTotal = donationHouseholdsTotal + buyHouseholdsTotal + generalHouseholdsAfter;
+  const totalMismatch = totalHouseholds > 0 && computedTotal !== totalHouseholds;
+
   return {
     landArea: landArea, baseFAR: baseFAR, netBurden: netBurden, alpha: alpha, relaxedBaseFAR: relaxedBaseFAR,
-    hasPrices: hasPrices, hasCompPrice: hasCompPrice, rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped,
+    hasPrices: hasPrices, rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped,
     compLandArea: compLandArea, lossCompRatio: lossCompRatio, communityBonusFAR: communityBonusFAR,
     buyHouseholdsTotal: buyHouseholdsTotal, donationHouseholdsTotal: donationHouseholdsTotal, buyRatio: buyRatio,
     buyPlanTotal: buyPlanTotal,
@@ -949,7 +971,8 @@ function calculate() {
     targetFARPct: targetFARPct,
     buyBonusBefore: buyBonusBefore, buyBonusAfter: buyBonusAfter,
     communityBonusPct: communityBonusPct,
-    saleUnitsLinked: saleUnitsLinked, saleTypedTotal: saleTypedTotal, saleTypedArea: saleTypedArea, saleMatch: saleMatch
+    saleUnitsLinked: saleUnitsLinked, saleTypedTotal: saleTypedTotal, saleTypedArea: saleTypedArea, saleMatch: saleMatch,
+    totalMismatch: totalMismatch, computedTotal: computedTotal
   };
 }
 
@@ -1004,11 +1027,11 @@ function renderChain(calc) {
       calc.isCapped ? "상한 1.5 캡 적용됨" : (calc.hasPrices ? "캡 미적용" : null),
       "사업지 공시지가가 서울시 평균보다 낮을수록 값이 커지며, 1.5를 초과할 수 없습니다. 임대주택 의무면적과 용적률 인센티브에 직접 영향을 줍니다."),
     chainStepHTML("5","손실보상 토지환산",
-      "환산면적 = 손실보상액 ÷ (손실보상 토지환산용 공시지가 × 2)",
-      calc.compLandArea !== null ? fmtArea(calc.compLandArea) + "㎡" : "손실보상 토지환산용 공시지가 입력 필요",
+      "환산면적 = 손실보상액 ÷ (사업지공시지가 × 2)",
+      calc.compLandArea !== null ? fmtArea(calc.compLandArea) + "㎡" : "공시지가 입력 필요",
       calc.lossCompRatio !== null ? "토지환산비율 " + fmtPctVal(calc.lossCompRatio*100) : null,
       false, null,
-      "세입자 손실보상액을 토지면적으로 환산한 값입니다. 보정계수 산정에 쓰이는 사업지 평균 공시지가와 별도로 입력된 손실보상 토지환산용 공시지가를 사용합니다."),
+      "세입자 손실보상액을 토지면적으로 환산한 값으로, 임대주택 의무비율 산정 시 일부를 차감해줍니다."),
     chainStepHTML("6","기부채납 임대주택 면적",
       "대지면적 × ((기준용적률(상향)−기준용적률)÷2÷보정계수 − 손실보상비율)",
       calc.donationAreaAfter !== null ? fmtArea(calc.donationAreaAfter) + "㎡" : "—",
@@ -1029,19 +1052,15 @@ function renderCFLive(calc) {
   const el = document.getElementById("cfLive");
   if (!el) return;
   if (!calc.hasPrices) {
-    el.innerHTML = '<span class="cf-live-empty">서울시·사업지 평균 공시지가를 모두 입력하면 보정계수가 자동으로 계산됩니다.</span>';
+    el.innerHTML = '<span class="cf-live-empty">두 공시지가를 모두 입력하면 보정계수가 자동으로 계산됩니다.</span>';
     return;
   }
-  const compNote = calc.hasCompPrice
-    ? '<span class="cf-live-detail num" style="margin-top:.25rem;display:block;">손실보상 환산 공시지가 ' + fmtNum(getFieldVal("compPrice"),0) + '원/㎡ — 보정계수와 별도 적용</span>'
-    : '<span class="cf-live-detail" style="margin-top:.25rem;display:block;color:var(--warn);">⚠ 손실보상 토지환산용 공시지가 미입력 — 손실보상비율 미산정</span>';
   el.innerHTML =
     '<div><div class="cf-live-label">산출된 사업성보정계수</div>' +
     '<div class="cf-live-value num">' + fmtNum(calc.correctionFactor,2) + '</div></div>' +
     '<div style="text-align:right;">' +
     (calc.isCapped ? '<span class="cf-live-flag">상한 1.5 캡 적용</span><br>' : '') +
     '<span class="cf-live-detail num">원시 비율 ' + fmtNum(calc.rawRatio,2) + ' (' + fmtNum(calc.rawRatio*100,2) + '%)</span>' +
-    compNote +
     '</div>';
 }
 
@@ -1158,29 +1177,38 @@ function deltaBadge(curr, plan) {
 }
 
 function unitRowHTML(u, editable, showPlan) {
+  var t = getType(u.typeId);
+  var typeName = t.name || "—";
+  var typeArea = t.area || 0;
   if (editable) {
-    const planCell = showPlan
+    // 타입 선택 드롭다운 (일반분양 마스터 목록에서 선택)
+    var typeOptions = saleUnits.map(function(st){
+      return '<option value="' + st.id + '"' + (st.id === u.typeId ? ' selected' : '') + '>' + st.name + '</option>';
+    }).join('');
+    var typeSelect = '<select class="cell-input" style="min-width:4.5rem;" data-field="typeId" data-id="' + u.id + '">' + typeOptions + '</select>';
+    var areaDisplay = '<td class="num" style="color:var(--slate);font-size:.78rem;">' + fmtArea(typeArea) + '</td>';
+    var planCell = showPlan
       ? '<td><input type="text" inputmode="numeric" class="cell-input w-count" data-field="planCount" data-id="' + u.id + '" value="' + liveFormat(u.planCount) + '" /></td>'
       : '';
-    const applyCell = '<td><input type="text" inputmode="numeric" class="cell-input w-count" data-field="count" data-id="' + u.id + '" value="' + liveFormat(u.count) + '" /></td>';
-    const deltaCell = showPlan ? '<td class="num delta-cell">' + deltaBadge(u.count, u.planCount) + '</td>' : '';
+    var applyCell = '<td><input type="text" inputmode="numeric" class="cell-input w-count" data-field="count" data-id="' + u.id + '" value="' + liveFormat(u.count) + '" /></td>';
+    var deltaCell = showPlan ? '<td class="num delta-cell">' + deltaBadge(u.count, u.planCount) + '</td>' : '';
     return '<tr data-id="' + u.id + '">' +
-      '<td><input type="text" class="cell-input w-name" data-field="name" data-id="' + u.id + '" value="' + (u.name||"") + '" /></td>' +
-      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="area" data-id="' + u.id + '" data-kind="area" value="' + liveFormat(u.area) + '" /></td>' +
+      '<td>' + typeSelect + '</td>' +
+      areaDisplay +
       planCell + applyCell + deltaCell +
-      '<td class="num subtotal-cell">' + fmtArea((u.count||0)*(u.area||0)) + '</td>' +
+      '<td class="num subtotal-cell">' + fmtArea((u.count||0)*typeArea) + '</td>' +
       '<td class="del-col"><button class="btn-del" data-id="' + u.id + '" title="삭제">×</button></td>' +
       '</tr>';
   } else {
-    const planCell = showPlan ? '<td class="num">' + fmtInt(u.planCount) + '</td>' : '';
-    const deltaCell = showPlan ? '<td class="num">' + deltaBadge(u.count, u.planCount) + '</td>' : '';
+    var planCell2 = showPlan ? '<td class="num">' + fmtInt(u.planCount) + '</td>' : '';
+    var deltaCell2 = showPlan ? '<td class="num">' + deltaBadge(u.count, u.planCount) + '</td>' : '';
     return '<tr>' +
-      '<td>' + (u.name||"") + '</td>' +
-      '<td class="num">' + fmtArea(u.area) + '</td>' +
-      planCell +
+      '<td>' + typeName + '</td>' +
+      '<td class="num">' + fmtArea(typeArea) + '</td>' +
+      planCell2 +
       '<td class="num">' + fmtInt(u.count) + '</td>' +
-      deltaCell +
-      '<td class="num subtotal-cell">' + fmtArea((u.count||0)*(u.area||0)) + '</td>' +
+      deltaCell2 +
+      '<td class="num subtotal-cell">' + fmtArea((u.count||0)*typeArea) + '</td>' +
       '</tr>';
   }
 }
@@ -1254,7 +1282,10 @@ function attachSaleListeners(bodyId) {
   document.querySelectorAll('#' + bodyId + ' .btn-del').forEach(function(btn){
     btn.addEventListener("click", function(e){
       const id = e.target.getAttribute("data-id");
+      // 일반분양 마스터 삭제 → 기부형·매입형에서 해당 typeId 행도 연동 삭제
       saleUnits = saleUnits.filter(function(u){ return u.id !== id; });
+      donationUnits = donationUnits.filter(function(u){ return u.typeId !== id; });
+      buyUnits = buyUnits.filter(function(u){ return u.typeId !== id; });
       renderAll();
     });
   });
@@ -1262,40 +1293,32 @@ function attachSaleListeners(bodyId) {
 
 function attachUnitListeners(units, bodyId, onDelete) {
   document.querySelectorAll('#' + bodyId + ' [data-field]').forEach(function(input){
-    input.addEventListener("input", function(e){
-      const id = e.target.getAttribute("data-id");
-      const field = e.target.getAttribute("data-field");
-      const u = units.find(function(x){ return x.id === id; });
+    var field = input.getAttribute("data-field");
+    var eventName = (input.tagName === 'SELECT') ? 'change' : 'input';
+    input.addEventListener(eventName, function(e){
+      var id = e.target.getAttribute("data-id");
+      var u = units.find(function(x){ return x.id === id; });
       if (!u) return;
-      if (field === "name") {
-        u.name = e.target.value;
+      if (field === "typeId") {
+        u.typeId = e.target.value;
         renderAll(true);
-      } else {
-        const caret = e.target.selectionStart;
-        const before = e.target.value.length;
-        const formatted = liveFormat(e.target.value);
-        u[field] = (field === "count" || field === "planCount" || field === "baseCount") ? (parseNum(formatted) || 0) : parseNum(formatted);
-        e.target.value = formatted;
-        const after = formatted.length;
-        const newPos = Math.max(0, caret + (after - before));
-        e.target.setSelectionRange(newPos, newPos);
-        autoApplied = false;
-        renderAll(true);
+        return;
       }
+      var caret = e.target.selectionStart;
+      var before = e.target.value.length;
+      var formatted = liveFormat(e.target.value);
+      u[field] = parseNum(formatted) || 0;
+      e.target.value = formatted;
+      var after = formatted.length;
+      var newPos = Math.max(0, caret + (after - before));
+      e.target.setSelectionRange(newPos, newPos);
+      autoApplied = false;
+      renderAll(true);
     });
-    if (input.getAttribute("data-kind") === "area") {
-      input.addEventListener("blur", function(e){
-        formatAreaOnBlur(e.target);
-        const id = e.target.getAttribute("data-id");
-        const u = units.find(function(x){ return x.id === id; });
-        if (u) u.area = parseNum(e.target.value);
-        renderAll(true);
-      });
-    }
   });
   document.querySelectorAll('#' + bodyId + ' .btn-del').forEach(function(btn){
     btn.addEventListener("click", function(e){
-      const id = e.target.getAttribute("data-id");
+      var id = e.target.getAttribute("data-id");
       onDelete(id);
       renderAll();
     });
@@ -1303,12 +1326,14 @@ function attachUnitListeners(units, bodyId, onDelete) {
 }
 
 function addDonationType() {
-  donationUnits.push({ id: nextId(), name: "신규", area: 0, planCount: 0, count: 0 });
+  var firstType = saleUnits[0];
+  donationUnits.push({ id: nextId(), typeId: firstType ? firstType.id : "", planCount: 0, count: 0 });
   autoApplied = false;
   renderAll();
 }
 function addBuyType() {
-  buyUnits.push({ id: nextId(), name: "신규", area: 0, planCount: 0, count: 0 });
+  var firstType = saleUnits[0];
+  buyUnits.push({ id: nextId(), typeId: firstType ? firstType.id : "", planCount: 0, count: 0 });
   renderAll();
 }
 function addSaleType() {
@@ -1519,9 +1544,11 @@ function renderAll(skipFocusedTables) {
 
   const dFooter = document.getElementById("donationFooter");
   dFooter.className = "unit-footer footer-2line " + (calc.isOK === false ? "footer-warn" : "footer-ok");
-  const saleImpactText = calc.generalDelta === 0
+  const donSaleImpact = calc.donationDelta === 0
     ? '분양 변동없음'
-    : (calc.generalDelta > 0 ? '→ 분양 ▲' + calc.generalDelta + '세대 확보' : '→ 분양 ▼' + Math.abs(calc.generalDelta) + '세대 감소');
+    : (calc.donationDelta < 0
+        ? '→ 임대(기부형) ▼' + Math.abs(calc.donationDelta) + '세대 감소 → 분양 ▲' + Math.abs(calc.donationDelta) + '세대 확보'
+        : '→ 임대(기부형) ▲' + calc.donationDelta + '세대 증가 → 분양 ▼' + calc.donationDelta + '세대 감소');
   dFooter.innerHTML =
     '<div class="footer-row">' +
     '<span class="num">계획 ' + fmtInt(calc.donationPlanTotal) + '세대 → 적용 ' + fmtInt(calc.donationHouseholdsTotal) + '세대 ' + deltaBadge(calc.donationHouseholdsTotal, calc.donationPlanTotal) + ' · ' + fmtArea(calc.donationAreaCurrentTotal) + '㎡</span>' +
@@ -1531,7 +1558,7 @@ function renderAll(skipFocusedTables) {
       : '공시지가 입력 후 판정') +
     '</span>' +
     '</div>' +
-    '<div class="footer-sale-impact num">' + saleImpactText + '</div>';
+    '<div class="footer-sale-impact num">' + donSaleImpact + '</div>';
 
   const rdFooter = document.getElementById("resultDonationFooter");
   rdFooter.className = dFooter.className;
@@ -1540,10 +1567,35 @@ function renderAll(skipFocusedTables) {
   document.getElementById("autoNote").style.display = autoApplied ? "block" : "none";
 
   const bFooter = document.getElementById("buyFooter");
+  const buyDelta = calc.buyHouseholdsTotal - calc.buyPlanTotal;
+  const buySaleImpact = buyDelta === 0
+    ? '분양 변동없음'
+    : (buyDelta < 0
+        ? '→ 임대(매입형) ▼' + Math.abs(buyDelta) + '세대 감소 → 분양 ▲' + Math.abs(buyDelta) + '세대 확보'
+        : '→ 임대(매입형) ▲' + buyDelta + '세대 증가 → 분양 ▼' + buyDelta + '세대 감소');
+  bFooter.className = "unit-footer footer-2line footer-ok";
   bFooter.innerHTML =
+    '<div class="footer-row">' +
     '<span class="num">계획 ' + fmtInt(calc.buyPlanTotal) + '세대 → 적용 ' + fmtInt(calc.buyHouseholdsTotal) + '세대 ' + deltaBadge(calc.buyHouseholdsTotal, calc.buyPlanTotal) + '</span>' +
-    '<span class="footer-status num">매입형 비율 ' + (calc.buyRatio !== null ? fmtPctVal(calc.buyRatio*100) : '—') + '</span>';
+    '<span class="footer-status num">매입형 비율 ' + (calc.buyRatio !== null ? fmtPctVal(calc.buyRatio*100) : '—') + '</span>' +
+    '</div>' +
+    '<div class="footer-sale-impact num">' + buySaleImpact + '</div>';
   document.getElementById("resultBuyFooter").innerHTML = bFooter.innerHTML;
+  document.getElementById("resultBuyFooter").className = bFooter.className;
+
+  // ── 계획세대수 불일치 경고 ──
+  var mismatchEl = document.getElementById("totalMismatchWarn");
+  if (mismatchEl) {
+    if (calc.totalMismatch) {
+      mismatchEl.style.display = "block";
+      mismatchEl.textContent = "⚠ 계획 세대수(" + fmtInt(calc.totalHouseholds) + "세대)와 입력 합계(" +
+        fmtInt(calc.computedTotal) + "세대: 기부형 " + fmtInt(calc.donationHouseholdsTotal) +
+        " + 매입형 " + fmtInt(calc.buyHouseholdsTotal) +
+        " + 분양 " + fmtInt(calc.generalHouseholdsAfter) + ")가 일치하지 않습니다.";
+    } else {
+      mismatchEl.style.display = "none";
+    }
+  }
 
   const sFooter = document.getElementById("saleFooter");
   sFooter.className = "unit-footer " + (calc.saleMatch ? "footer-ok" : "footer-warn");
@@ -1569,17 +1621,18 @@ function renderAll(skipFocusedTables) {
 
 function updateSubtotalCells(units, bodyId, showPlan) {
   units.forEach(function(u){
-    const row = document.querySelector('#' + bodyId + ' tr[data-id="' + u.id + '"]');
+    var row = document.querySelector('#' + bodyId + ' tr[data-id="' + u.id + '"]');
     if (!row) return;
-    const subtotalCell = row.querySelector('td.subtotal-cell');
-    if (subtotalCell) subtotalCell.textContent = fmtArea((u.count||0)*(u.area||0));
+    var t = getType(u.typeId);
+    var subtotalCell = row.querySelector('td.subtotal-cell');
+    if (subtotalCell) subtotalCell.textContent = fmtArea((u.count||0)*(t.area||0));
     if (showPlan) {
-      const deltaCell = row.querySelector('td.delta-cell');
+      var deltaCell = row.querySelector('td.delta-cell');
       if (deltaCell) deltaCell.innerHTML = deltaBadge(u.count, u.planCount);
     }
   });
-  const totalArea = zones.reduce(function(s,z){ return s + (z.area||0); }, 0);
-  const el = document.getElementById("zoneTotalArea");
+  var totalArea = zones.reduce(function(s,z){ return s + (z.area||0); }, 0);
+  var el = document.getElementById("zoneTotalArea");
   if (el) el.textContent = "합계 " + fmtArea(totalArea) + "㎡";
 }
 
@@ -1608,7 +1661,9 @@ function applyAutoSuggest() {
   const target = calc.donationAreaAfter;
 
   let working = donationUnits.map(function(u){ return Object.assign({}, u); });
-  let total = working.reduce(function(s,u){ return s + (u.count||0)*(u.area||0); }, 0);
+  let total = working.reduce(function(s,u){
+    var t = getType(u.typeId); return s + (u.count||0)*(t.area||0);
+  }, 0);
 
   // 최소 의무면적(target) 이상을 유지하는 선에서, 가능한 한 세대수를 줄여 사업성을 개선
   // 라운드로빈으로 1세대씩 시험 차감 — 차감 후에도 target 이상이면 적용, target 미만이 되면 그 시도는 취소하고 종료
@@ -1621,7 +1676,8 @@ function applyAutoSuggest() {
       const idx = (cursor + k) % working.length;
       const u = working[idx];
       if (u.count > 0) {
-        const nextTotal = total - (u.area||0);
+        var ta = getType(u.typeId);
+        const nextTotal = total - (ta.area||0);
         if (nextTotal >= target) {
           u.count -= 1;
           total = nextTotal;
@@ -1717,6 +1773,113 @@ document.getElementById("seoulPrice").addEventListener("input", function(){
 
 Object.keys(SIMPLE_DEFAULTS).forEach(function(id){
   document.getElementById(id).value = liveFormat(SIMPLE_DEFAULTS[id]);
+});
+
+// ─── JSON 저장 / 불러오기 ──────────────────────────────────────────────────────
+
+function collectState() {
+  // 입력 필드값
+  var fields = {};
+  SIMPLE_FIELD_IDS.forEach(function(id){
+    fields[id] = document.getElementById(id).value;
+  });
+  fields.seoulPriceYear = document.getElementById("seoulPriceYear").value;
+
+  return {
+    version: "bfccc-v1",
+    savedAt: new Date().toISOString(),
+    projectType: projectType,
+    fields: fields,
+    zones: zones.map(function(z){ return Object.assign({}, z); }),
+    saleUnits: saleUnits.map(function(u){ return Object.assign({}, u); }),
+    donationUnits: donationUnits.map(function(u){ return Object.assign({}, u); }),
+    buyUnits: buyUnits.map(function(u){ return Object.assign({}, u); }),
+  };
+}
+
+function applyState(state) {
+  if (!state || state.version !== "bfccc-v1") throw new Error("지원하지 않는 파일 형식입니다.");
+
+  // 사업유형
+  if (state.projectType) {
+    projectType = state.projectType;
+    document.querySelectorAll(".ptype-btn").forEach(function(b){
+      b.classList.toggle("active", b.getAttribute("data-ptype") === projectType);
+    });
+  }
+
+  // 입력 필드
+  if (state.fields) {
+    SIMPLE_FIELD_IDS.forEach(function(id){
+      if (state.fields[id] !== undefined) {
+        document.getElementById(id).value = state.fields[id];
+      }
+    });
+    if (state.fields.seoulPriceYear) {
+      document.getElementById("seoulPriceYear").value = state.fields.seoulPriceYear;
+    }
+  }
+
+  // 배열 상태
+  if (state.zones)         zones         = state.zones.map(function(z){ return Object.assign({}, z); });
+  if (state.saleUnits)     saleUnits     = state.saleUnits.map(function(u){ return Object.assign({}, u); });
+  if (state.donationUnits) donationUnits = state.donationUnits.map(function(u){ return Object.assign({}, u); });
+  if (state.buyUnits)      buyUnits      = state.buyUnits.map(function(u){ return Object.assign({}, u); });
+
+  autoApplied = false;
+  updateSeoulPriceSourceNote();
+  renderAll();
+}
+
+function showToast(msg, isErr) {
+  var el = document.getElementById("jsonToast");
+  el.textContent = msg;
+  el.className = "json-toast show" + (isErr ? " err" : "");
+  clearTimeout(el._timer);
+  el._timer = setTimeout(function(){ el.classList.remove("show"); }, 2200);
+}
+
+// 저장
+document.getElementById("jsonSaveBtn").addEventListener("click", function(){
+  var state = collectState();
+  var json = JSON.stringify(state, null, 2);
+  var blob = new Blob([json], { type: "application/json" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  // 파일명: BFCCC_YYYYMMDD_HHMMSS.json
+  var now = new Date();
+  var pad = function(n){ return String(n).padStart(2,"0"); };
+  var ts = now.getFullYear() + pad(now.getMonth()+1) + pad(now.getDate()) +
+           "_" + pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds());
+  a.download = "BFCCC_" + ts + ".json";
+  a.href = url;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("✓ 저장 완료");
+});
+
+// 불러오기
+document.getElementById("jsonLoadBtn").addEventListener("click", function(){
+  document.getElementById("jsonFileInput").value = "";
+  document.getElementById("jsonFileInput").click();
+});
+
+document.getElementById("jsonFileInput").addEventListener("change", function(e){
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try {
+      var state = JSON.parse(ev.target.result);
+      applyState(state);
+      showToast("✓ 불러오기 완료 — " + file.name);
+    } catch(err) {
+      showToast("✕ 오류: " + err.message, true);
+    }
+  };
+  reader.readAsText(file, "utf-8");
 });
 
 updateSeoulPriceSourceNote();
