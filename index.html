@@ -200,7 +200,7 @@ body{ margin:0; font-family:var(--font); }
 .kpi-hero-nums{ font-size:1.3rem; font-weight:700; color:#fff; }
 .kpi-hero-delta{ font-size:1.5rem; font-weight:700; color:#fff; background:rgba(255,255,255,0.18); padding:.2rem .7rem; border-radius:6px; }
 
-.kpi-grid{ display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:1.7rem; }
+.kpi-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:.75rem; margin-bottom:1.7rem; }
 .kpi-grid > .kpi{ min-width:0; }
 .kpi{
   background:var(--navy); color:#fff; border-radius:8px; padding:1rem 1.1rem;
@@ -637,6 +637,8 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
             </label>
           </div>
           <div id="totalMismatchWarn" style="display:none;margin-top:.5rem;padding:.5rem .75rem;background:var(--warn-soft);color:var(--warn);border-radius:6px;font-size:.76rem;font-weight:600;line-height:1.5;border-left:3px solid var(--warn);"></div>
+          <div id="farInvertWarn" style="display:none;margin-top:.5rem;padding:.5rem .75rem;background:var(--warn-soft);color:var(--warn);border-radius:6px;font-size:.76rem;font-weight:600;line-height:1.5;border-left:3px solid var(--warn);"></div>
+          <div id="saleMinus" style="display:none;margin-top:.5rem;padding:.5rem .75rem;background:var(--warn-soft);color:var(--warn);border-radius:6px;font-size:.76rem;font-weight:600;line-height:1.5;border-left:3px solid var(--warn);"></div>
         </div>
       </div>
 
@@ -927,8 +929,12 @@ function calculate() {
 
   const hasPrices = seoulPrice !== null && sitePrice !== null && sitePrice > 0;
   const rawRatio = hasPrices ? seoulPrice / sitePrice : null;
-  const correctionFactor = hasPrices ? Math.min(rawRatio, 1.5) : null;
+  // 보정계수: 소수점 셋째자리 올림 후 1.0~1.5 범위 적용 (PDF 세부기준)
+  const correctionFactor = hasPrices
+    ? Math.min(Math.max(Math.ceil(rawRatio * 100) / 100, 1.0), 1.5)
+    : null;
   const isCapped = hasPrices ? rawRatio >= 1.5 : false;
+  const isFloored = hasPrices ? rawRatio <= 1.0 : false;
 
   const baseFARRounded = baseFAR !== null ? Math.round(baseFAR * 10000) / 10000 : null; // 표시용
   // Q14 = Q11 ÷ (Q12 × 2)
@@ -962,12 +968,12 @@ function calculate() {
     var t = getType(u.typeId); return s + (u.count||0)*(t.area||0);
   }, 0);
 
-  // E10/H10: 기부채납 의무면적 = E3 × (...)  ← E3(대지면적) 사용
+  // E10/H10: 기부채납 의무면적 — 음수 방어(손실보상 과다 시)
   const donationAreaBefore = (baseFAR !== null && lossCompRatio !== null && siteArea > 0)
-    ? Math.floor(siteArea * ((targetFAR - baseFAR)/2 - lossCompRatio) * 10000) / 10000
+    ? Math.max(Math.floor(siteArea * ((targetFAR - baseFAR)/2 - lossCompRatio) * 10000) / 10000, 0)
     : null;
   const donationAreaAfter = (baseFAR !== null && lossCompRatio !== null && correctionFactor !== null && siteArea > 0)
-    ? Math.floor(siteArea * ((targetFAR - baseFAR)/2/correctionFactor - lossCompRatio) * 10000) / 10000
+    ? Math.max(Math.floor(siteArea * ((targetFAR - baseFAR)/2/correctionFactor - lossCompRatio) * 10000) / 10000, 0)
     : null;
 
   const farBefore = (relaxedBaseFAR !== null && buyRatio !== null && communityBonusFAR !== null)
@@ -1010,7 +1016,7 @@ function calculate() {
   return {
     landArea: siteArea, zoneSum: zoneSum, areaMismatch: areaMismatch,
     baseFAR: baseFAR, netBurden: netBurden, alpha: alpha, relaxedBaseFAR: relaxedBaseFAR,
-    hasPrices: hasPrices, hasCompPrice: hasCompPrice, rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped,
+    hasPrices: hasPrices, hasCompPrice: hasCompPrice, rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped, isFloored: isFloored,
     compLandArea: compLandArea, lossCompRatio: lossCompRatio, lossRelaxRatio: lossRelaxRatio, lossRelaxArea: lossRelaxArea, communityBonusFAR: communityBonusFAR,
     buyHouseholdsTotal: buyHouseholdsTotal, donationHouseholdsTotal: donationHouseholdsTotal, buyRatio: buyRatio,
     buyPlanTotal: buyPlanTotal,
@@ -1072,12 +1078,12 @@ function renderChain(calc) {
       null, false, null,
       "정비기반시설 제공 비율(α)을 반영해 산정한 완화용적률의 계산 기준값입니다."),
     chainStepHTML("4","사업성보정계수",
-      "MIN(서울시 평균공시지가 ÷ 사업지 평균공시지가, 1.5)",
-      calc.correctionFactor !== null ? fmtNum(calc.correctionFactor,4) : "공시지가 입력 필요",
-      calc.rawRatio !== null ? "원시 비율 " + fmtNum(calc.rawRatio,4) : null,
+      "MIN(MAX(⌈서울시 평균공시지가 ÷ 사업지 평균공시지가⌉₀.₀₁, 1.0), 1.5)  — 소수점 셋째자리 올림, 범위 1.0~1.5",
+      calc.correctionFactor !== null ? fmtNum(calc.correctionFactor,2) : "공시지가 입력 필요",
+      calc.rawRatio !== null ? "원시 비율 " + fmtNum(calc.rawRatio,4) + (calc.isCapped ? " → 상한 1.5 적용" : calc.isFloored ? " → 하한 1.0 적용" : " → 올림 적용") : null,
       true,
-      calc.isCapped ? "상한 1.5 적용됨" : (calc.hasPrices ? "캡 미적용" : null),
-      "사업지 공시지가가 서울시 평균보다 낮을수록 값이 커지며, 1.5를 초과할 수 없습니다. 임대주택 의무면적과 용적률 인센티브에 직접 영향을 줍니다."),
+      calc.isCapped ? "상한 1.5 적용" : (calc.isFloored ? "하한 1.0 적용" : (calc.hasPrices ? "범위 내" : null)),
+      "사업지 공시지가가 서울시 평균보다 낮을수록 값이 커집니다. 1.0 미만은 1.0, 1.5 초과는 1.5로 고정되며 소수점 셋째자리에서 올림합니다."),
     chainStepHTML("5","손실보상 토지환산",
       "환산면적 = 손실보상액 ÷ (손실보상 토지환산용 공시지가 × 2)  /  토지환산비율 = 기준용적률 × (1 + 0.7 × (환산면적 ÷ 대지면적)) − 기준용적률",
       calc.compLandArea !== null ? fmtArea(calc.compLandArea) + "㎡" : "손실보상 토지환산용 공시지가 입력 필요",
@@ -1123,8 +1129,9 @@ function renderCFLive(calc) {
     '<div><div class="cf-live-label">산출된 사업성보정계수</div>' +
     '<div class="cf-live-value num">' + fmtNum(calc.correctionFactor,2) + '</div></div>' +
     '<div style="text-align:right;">' +
-    (calc.isCapped ? '<span class="cf-live-flag">상한 1.5 캡 적용</span><br>' : '') +
-    '<span class="cf-live-detail num">원시 비율 ' + fmtNum(calc.rawRatio,2) + ' (' + fmtNum(calc.rawRatio*100,2) + '%)</span>' +
+    (calc.isCapped ? '<span class="cf-live-flag">상한 1.5 적용</span><br>' : '') +
+    (calc.isFloored ? '<span class="cf-live-flag">하한 1.0 적용</span><br>' : '') +
+    '<span class="cf-live-detail num">원시 비율 ' + fmtNum(calc.rawRatio,4) + ' → 올림 후 범위 적용</span>' +
     '</div>';
 }
 
@@ -1149,16 +1156,33 @@ function renderKPI(calc) {
 
   const items = [
     { label:"보정계수", value: calc.correctionFactor !== null ? fmtNum(calc.correctionFactor,2) : "—",
-      flag: calc.isCapped ? "CAP 1.5" : null, cls:"",
-      tip:"서울시 평균 공시지가 ÷ 사업지 평균 공시지가의 비율로, 1.5를 넘지 않도록 상한이 적용됩니다." },
+      flag: calc.isCapped ? "상한 1.5" : (calc.isFloored ? "하한 1.0" : null), cls:"",
+      tip:"소수점 셋째자리 올림 후 1.0~1.5 범위 적용. 사업지 공시지가가 낮을수록 값이 커집니다." },
+    { label:"용적률 (전 → 후)", value: (calc.farBefore !== null && calc.farAfter !== null)
+        ? fmtPctVal(calc.farBefore*100) + " → " + fmtPctVal(calc.farAfter*100) : "—", cls:"",
+      tip:"보정계수 적용 전·후 산정 용적률입니다." },
     { label:"용적률 증감", value: (calc.farBefore !== null && calc.farAfter !== null)
         ? "▲ " + fmtNum((calc.farAfter-calc.farBefore)*100,2) + "%p" : "—", cls:"",
-      tip:"보정계수 적용 전과 후, 통합심의 총 용적률의 변화 폭입니다." },
-    { label:"임대(기부형) 세대 증감", value: deltaText + "  (" + fmtInt(calc.donationPlanTotal) + "→" + fmtInt(calc.donationHouseholdsTotal) + ")", cls: deltaCls,
-      tip:"계획(원안) 대비 보정계수를 반영해 현재 입력된 기부형 임대 세대수의 변화입니다." },
+      tip:"보정계수가 매입형 인센티브에 반영되어 늘어나는 용적률 증분입니다." },
+    { label:"기준용적률", value: calc.baseFAR !== null ? fmtPctVal(calc.baseFAR*100) : "—", cls:"",
+      tip:"용도지역별 면적 가중평균으로 산정한 종상향 전 기준용적률입니다." },
+    { label:"완화용적률 계산기준", value: calc.relaxedBaseFAR !== null ? fmtPctVal(calc.relaxedBaseFAR*100) : "—", cls:"",
+      tip:"기준용적률(상향) × (1 + 1.3 × α). 정비기반시설 제공 비율이 반영된 완화 기준값입니다." },
+    { label:"α 정비기반시설 부담률", value: calc.alpha !== null ? fmtPctVal(calc.alpha*100) : "—", cls:"",
+      tip:"(정비기반시설 설치면적 − 국공유지 면적) ÷ 대지면적" },
+    { label:"손실보상 토지환산비율", value: calc.lossCompRatio !== null ? fmtPctVal(calc.lossCompRatio*100,4) : "—", cls:"",
+      tip:"기준용적률 × (1 + 0.7 × 환산면적÷대지면적) − 기준용적률" },
+    { label:"세입자 완화비율", value: calc.lossRelaxRatio !== null ? fmtPctVal(calc.lossRelaxRatio*100,4) : "—", cls:"",
+      tip:"(기준용적률(상향) − 기준용적률) ÷ 2 − 토지환산비율. 임대주택 의무에서 차감되는 완화분입니다." },
+    { label:"기부채납 의무면적 (보정 전)", value: calc.donationAreaBefore !== null ? fmtArea(calc.donationAreaBefore) + "㎡" : "—", cls:"",
+      tip:"보정계수 미적용 시 기부채납 임대주택 최소 의무면적입니다." },
+    { label:"기부채납 의무면적 (보정 후)", value: calc.donationAreaAfter !== null ? fmtArea(calc.donationAreaAfter) + "㎡" : "—", cls:"",
+      tip:"보정계수 적용 후 기부채납 임대주택 최소 의무면적입니다. 타입별 합산 면적이 이 값 이상이어야 합니다." },
+    { label:"임대(기부형) 세대 증감", value: deltaText + "  (" + fmtInt(calc.donationPlanTotal) + " → " + fmtInt(calc.donationHouseholdsTotal) + ")", cls: deltaCls,
+      tip:"계획(원안) 대비 현재 기부형 임대 세대수의 변화입니다." },
     { label:"현재 배분 상태", value: calc.isOK === null ? "—" : (calc.isOK ? "OK" : "미달"),
       cls: calc.isOK === false ? "kpi-warn" : (calc.isOK === true ? "kpi-ok" : ""),
-      tip:"입력된 기부형 타입별 세대수의 합산 면적이 보정 후 최소 의무면적 이상인지 여부입니다." }
+      tip:"기부형 타입별 합산 면적이 보정 후 최소 의무면적 이상인지 여부입니다." }
   ];
   const html = items.map(function(it){
     return '<div class="kpi ' + it.cls + '">' +
@@ -1694,6 +1718,28 @@ function renderAll(skipFocusedTables) {
         " + 분양 " + fmtInt(calc.generalHouseholdsAfter) + ")가 일치하지 않습니다.";
     } else {
       mismatchEl.style.display = "none";
+    }
+  }
+
+  // ── 기준용적률 > 기준용적률(상향) 역전 경고 ──
+  var farInvertEl = document.getElementById("farInvertWarn");
+  if (farInvertEl) {
+    if (calc.baseFAR !== null && calc.baseFAR > (calc.targetFARPct/100)) {
+      farInvertEl.style.display = "block";
+      farInvertEl.textContent = "⚠ 기준용적률(" + fmtPctVal(calc.baseFAR*100) + ")이 기준용적률(상향)(" + fmtPctVal(calc.targetFARPct) + ")보다 높습니다. 용도지역 설정 또는 종상향 목표를 확인하세요.";
+    } else {
+      farInvertEl.style.display = "none";
+    }
+  }
+
+  // ── 일반분양 세대 음수 경고 ──
+  var saleMinusEl = document.getElementById("saleMinus");
+  if (saleMinusEl) {
+    if (calc.generalHouseholdsAfter < 0) {
+      saleMinusEl.style.display = "block";
+      saleMinusEl.textContent = "⚠ 임대 세대 합계(" + fmtInt(calc.donationHouseholdsTotal + calc.buyHouseholdsTotal) + "세대)가 총 계획 세대수(" + fmtInt(calc.totalHouseholds) + "세대)를 초과합니다. 세대수 배분을 조정하세요.";
+    } else {
+      saleMinusEl.style.display = "none";
     }
   }
 
