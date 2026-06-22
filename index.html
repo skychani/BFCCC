@@ -1101,13 +1101,13 @@ function renderChain(calc) {
       true, null,
       "기부채납 임대주택 타입별 합산 면적이 이 값 이상이어야 합니다. 보정계수가 클수록 의무면적이 줄어들어 분양세대 확보가 유리해집니다."),
     chainStepHTML("7","용적률 산정 (적용 전 → 후)",
-      "완화용적률 계산기준 + 매입형비율 × 2.5 × 보정계수 + 공동이용시설 추가용적",
+      "전: 완화용적률 계산기준 + 매입형비율 × 2.5 + 공동이용시설 추가용적  /  후: 완화용적률 계산기준 + 매입형비율 × 2.5 × 보정계수 + 공동이용시설 추가용적",
       (calc.farBefore !== null && calc.farAfter !== null)
         ? fmtPctVal(calc.farBefore*100) + " → " + fmtPctVal(calc.farAfter*100) : "—",
       (calc.farBefore !== null && calc.farAfter !== null)
-        ? "증감 ▲" + fmtNum((calc.farAfter-calc.farBefore)*100,2) + "%p" : null,
+        ? "증감 ▲" + fmtNum((calc.farAfter-calc.farBefore)*100,2) + "%p  (보정계수 " + fmtNum(calc.correctionFactor,4) + "이 매입형 인센티브에 반영)" : null,
       true, null,
-      "통합심의에 반영되는 최종 용적률로, 보정계수 적용 전·후를 비교합니다.")
+      "보정계수 적용 전은 매입형비율×2.5, 적용 후는 매입형비율×2.5×보정계수로 산정합니다. 보정계수가 1 이상이면 적용 후 용적률이 높아져 사업성이 개선됩니다.")
   ];
   document.getElementById("chainList").innerHTML = html.join("");
 }
