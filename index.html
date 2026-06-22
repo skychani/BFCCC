@@ -902,13 +902,23 @@ function calculate() {
   const correctionFactor = hasPrices ? Math.min(rawRatio, 1.5) : null;
   const isCapped = hasPrices ? rawRatio >= 1.5 : false;
 
-  const baseFARRounded = baseFAR !== null ? Math.round(baseFAR * 10000) / 10000 : null;
-  // Q14 = Q11 ÷ (Q12 × 2)  — 손실보상 토지환산용 공시지가(Q12=compPrice) 사용, 보정계수용 N13(sitePrice)과 별도
+  const baseFARRounded = baseFAR !== null ? Math.round(baseFAR * 10000) / 10000 : null; // 표시용만 사용
+  // Q14 = Q11 ÷ (Q12 × 2)  — 손실보상 토지환산용 공시지가(Q12=compPrice) 사용
   const hasCompPrice = compPrice !== null && compPrice > 0;
   const compLandArea = hasCompPrice ? compensationAmt / (compPrice * 2) : null;
   // Q13 = E7 × (1 + 0.7 × (Q14 ÷ E3)) − E7
-  const lossCompRatio = (compLandArea !== null && baseFARRounded !== null && landArea > 0)
-    ? baseFARRounded * (1 + 0.7 * (compLandArea / landArea)) - baseFARRounded
+  // ※ 엑셀에서 E7은 반올림 없이 raw값을 직접 참조 — baseFAR(raw) 사용해야 정확
+  const lossCompRatio = (compLandArea !== null && baseFAR !== null && landArea > 0)
+    ? baseFAR * (1 + 0.7 * (compLandArea / landArea)) - baseFAR
+    : null;
+  // Q16 = (250% − 163.69%) ÷ 2 − Q13  (엑셀 리터럴 163.69% = 기준용적률 하드코딩)
+  // Q16: 세입자 손실보상으로 면제되는 임대주택 공급비율 (표시·검증용)
+  const lossRelaxRatio = lossCompRatio !== null
+    ? (2.5 - 1.6369) / 2 - lossCompRatio
+    : null;
+  // S16 = E3 × Q16  — 세입자 손실보상에 따른 임대주택 완화 면적 (표시용)
+  const lossRelaxArea = (lossRelaxRatio !== null && landArea > 0)
+    ? landArea * lossRelaxRatio
     : null;
 
   const communityBonusFAR = landArea > 0 ? communityArea / landArea : null;
@@ -971,7 +981,7 @@ function calculate() {
   return {
     landArea: landArea, baseFAR: baseFAR, netBurden: netBurden, alpha: alpha, relaxedBaseFAR: relaxedBaseFAR,
     hasPrices: hasPrices, hasCompPrice: hasCompPrice, rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped,
-    compLandArea: compLandArea, lossCompRatio: lossCompRatio, communityBonusFAR: communityBonusFAR,
+    compLandArea: compLandArea, lossCompRatio: lossCompRatio, lossRelaxRatio: lossRelaxRatio, lossRelaxArea: lossRelaxArea, communityBonusFAR: communityBonusFAR,
     buyHouseholdsTotal: buyHouseholdsTotal, donationHouseholdsTotal: donationHouseholdsTotal, buyRatio: buyRatio,
     buyPlanTotal: buyPlanTotal,
     donationPlanTotal: donationPlanTotal, donationDelta: donationDelta,
@@ -1044,6 +1054,16 @@ function renderChain(calc) {
       calc.lossCompRatio !== null ? "토지환산비율(Q13) " + fmtPctVal(calc.lossCompRatio*100) : null,
       false, null,
       "손실보상액을 토지면적으로 환산합니다. 보정계수 산정에 쓰이는 사업지 평균 공시지가(N13)와 별도인 손실보상 토지환산용 공시지가(Q12)를 사용합니다. 환산된 비율만큼 임대주택 의무면적에서 차감됩니다."),
+    chainStepHTML("5-1","세입자 손실보상에 따른 임대주택 완화",
+      "Q16 = (250% − 163.69%) ÷ 2 − Q13(토지환산비율) / S16 = 대지면적 × Q16",
+      calc.lossRelaxRatio !== null
+        ? fmtPctVal(calc.lossRelaxRatio*100) + " / " + fmtArea(calc.lossRelaxArea) + "㎡"
+        : "—",
+      calc.lossCompRatio !== null
+        ? "Q13 차감으로 E10·H10에 반영 완료 — Q16·S16은 검증 표시용"
+        : null,
+      false, null,
+      "Q13(토지환산비율)이 기부채납 의무면적(E10/H10) 산식에서 차감되어 세입자 손실보상 완화가 이미 반영됩니다. Q16·S16은 그 완화 규모를 별도로 확인하는 파생 표시값입니다."),
     chainStepHTML("6","기부채납 임대주택 면적",
       "대지면적 × ((기준용적률(상향)−기준용적률)÷2÷보정계수 − 손실보상비율)",
       calc.donationAreaAfter !== null ? fmtArea(calc.donationAreaAfter) + "㎡" : "—",
