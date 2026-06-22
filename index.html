@@ -580,7 +580,7 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
                 <input type="text" inputmode="decimal" id="sitePrice" placeholder="예: 4,577,100" />
                 <span class="nf-suffix">원/㎡</span>
               </div>
-              <span class="nf-hint">면적 가중평균 기준 · 손실보상 토지환산에도 동일값 적용</span>
+              <span class="nf-hint">면적 가중평균 기준 · 보정계수(K3) 산정 전용</span>
             </label>
           </div>
           <div class="cf-live" id="cfLive"></div>
@@ -640,9 +640,17 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
               <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="communityArea" /><span class="nf-suffix">㎡</span></div>
             </label>
             <label class="nf">
-              <span class="nf-label">세입자 손실보상액<span class="tip-icon" data-tip="영업·주거 세입자에게 지급하는 손실보상 총액입니다. 토지면적으로 환산되어 임대주택 의무비율에서 일부 차감됩니다.">?</span></span>
+              <span class="nf-label">세입자 손실보상액<span class="tip-icon" data-tip="영업·주거 세입자에게 지급하는 손실보상 총액입니다. 아래 손실보상 토지환산용 공시지가와 함께 토지면적으로 환산되어 임대주택 의무비율에서 차감됩니다.">?</span></span>
               <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="compensationAmt" /><span class="nf-suffix">원</span></div>
             </label>
+          </div>
+          <div class="field-row">
+            <label class="nf">
+              <span class="nf-label">손실보상 토지환산용 공시지가<span class="tip-icon" data-tip="손실보상액을 토지면적으로 환산할 때만 사용하는 공시지가입니다(엑셀 Q12).&#10;Q14 = 손실보상액 ÷ (이 값 × 2)&#10;보정계수 산정에 쓰이는 사업지 평균 공시지가(N13)와 다를 수 있으므로 반드시 별도 입력하세요.">?</span></span>
+              <div class="nf-input-wrap nf-accent"><input type="text" inputmode="decimal" id="compPrice" placeholder="예: 4,161,000" /><span class="nf-suffix">원/㎡</span></div>
+              <span class="nf-hint">엑셀 Q12 — 사업지 평균 공시지가(N13)와 별도</span>
+            </label>
+            <div></div>
           </div>
         </div>
 
@@ -671,7 +679,7 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
           </table>
           <button class="btn btn-add btn-sm" id="addDonationBtn">+ 타입 추가</button>
           <div class="unit-footer" id="donationFooter"></div>
-          <p class="auto-note" id="autoNote" style="display:none;">최소 의무면적을 충족하는 선에서 세대수를 최대한 줄인 제안입니다 — 실제 평면 설계에 맞춰 자유롭게 조정하세요.</p>
+          <p class="auto-note" id="autoNote" style="display:none;">최소 의무면적을 충족하는 선에서 기부형 세대수를 최대한 줄인 제안입니다. 매입형은 10%~20% 미만 범위 내 최솟값으로 자동 조정됩니다.</p>
         </div>
 
         <div class="block">
@@ -854,11 +862,11 @@ let buyUnits = DEFAULT_BUY_UNITS.map(function(u){ return Object.assign({}, u); }
 let autoApplied = false;
 
 const SIMPLE_FIELD_IDS = [
-  "seoulPrice","sitePrice","targetFAR","totalHouseholds",
+  "seoulPrice","sitePrice","compPrice","targetFAR","totalHouseholds",
   "publicLand","infraArea","communityArea","compensationAmt"
 ];
 const SIMPLE_DEFAULTS = {
-  seoulPrice: 6302982, sitePrice: 4577100,
+  seoulPrice: 6302982, sitePrice: 4577100, compPrice: 4161000,
   targetFAR: 250, totalHouseholds: 556,
   publicLand: 528, infraArea: 2032.71, communityArea: 912.67,
   compensationAmt: 6289566541
@@ -872,6 +880,7 @@ function getFieldVal(id) {
 function calculate() {
   const seoulPrice = getFieldVal("seoulPrice");
   const sitePrice = getFieldVal("sitePrice");
+  const compPrice = getFieldVal("compPrice");       // Q12: 손실보상 토지환산 전용 공시지가 (N13과 별도)
   const targetFARPct = getFieldVal("targetFAR") || 0;
   const targetFAR = targetFARPct / 100;
   const totalHouseholds = getFieldVal("totalHouseholds") || 0;
@@ -894,7 +903,10 @@ function calculate() {
   const isCapped = hasPrices ? rawRatio >= 1.5 : false;
 
   const baseFARRounded = baseFAR !== null ? Math.round(baseFAR * 10000) / 10000 : null;
-  const compLandArea = hasPrices && sitePrice > 0 ? compensationAmt / (sitePrice * 2) : null;
+  // Q14 = Q11 ÷ (Q12 × 2)  — 손실보상 토지환산용 공시지가(Q12=compPrice) 사용, 보정계수용 N13(sitePrice)과 별도
+  const hasCompPrice = compPrice !== null && compPrice > 0;
+  const compLandArea = hasCompPrice ? compensationAmt / (compPrice * 2) : null;
+  // Q13 = E7 × (1 + 0.7 × (Q14 ÷ E3)) − E7
   const lossCompRatio = (compLandArea !== null && baseFARRounded !== null && landArea > 0)
     ? baseFARRounded * (1 + 0.7 * (compLandArea / landArea)) - baseFARRounded
     : null;
@@ -958,7 +970,7 @@ function calculate() {
 
   return {
     landArea: landArea, baseFAR: baseFAR, netBurden: netBurden, alpha: alpha, relaxedBaseFAR: relaxedBaseFAR,
-    hasPrices: hasPrices, rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped,
+    hasPrices: hasPrices, hasCompPrice: hasCompPrice, rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped,
     compLandArea: compLandArea, lossCompRatio: lossCompRatio, communityBonusFAR: communityBonusFAR,
     buyHouseholdsTotal: buyHouseholdsTotal, donationHouseholdsTotal: donationHouseholdsTotal, buyRatio: buyRatio,
     buyPlanTotal: buyPlanTotal,
@@ -1027,11 +1039,11 @@ function renderChain(calc) {
       calc.isCapped ? "상한 1.5 캡 적용됨" : (calc.hasPrices ? "캡 미적용" : null),
       "사업지 공시지가가 서울시 평균보다 낮을수록 값이 커지며, 1.5를 초과할 수 없습니다. 임대주택 의무면적과 용적률 인센티브에 직접 영향을 줍니다."),
     chainStepHTML("5","손실보상 토지환산",
-      "환산면적 = 손실보상액 ÷ (사업지공시지가 × 2)",
-      calc.compLandArea !== null ? fmtArea(calc.compLandArea) + "㎡" : "공시지가 입력 필요",
-      calc.lossCompRatio !== null ? "토지환산비율 " + fmtPctVal(calc.lossCompRatio*100) : null,
+      "Q14 = 손실보상액 ÷ (손실보상 토지환산용 공시지가 × 2)",
+      calc.compLandArea !== null ? fmtArea(calc.compLandArea) + "㎡" : "손실보상 토지환산용 공시지가 입력 필요",
+      calc.lossCompRatio !== null ? "토지환산비율(Q13) " + fmtPctVal(calc.lossCompRatio*100) : null,
       false, null,
-      "세입자 손실보상액을 토지면적으로 환산한 값으로, 임대주택 의무비율 산정 시 일부를 차감해줍니다."),
+      "손실보상액을 토지면적으로 환산합니다. 보정계수 산정에 쓰이는 사업지 평균 공시지가(N13)와 별도인 손실보상 토지환산용 공시지가(Q12)를 사용합니다. 환산된 비율만큼 임대주택 의무면적에서 차감됩니다."),
     chainStepHTML("6","기부채납 임대주택 면적",
       "대지면적 × ((기준용적률(상향)−기준용적률)÷2÷보정계수 − 손실보상비율)",
       calc.donationAreaAfter !== null ? fmtArea(calc.donationAreaAfter) + "㎡" : "—",
@@ -1658,31 +1670,88 @@ function resetDonationUnits() {
 function applyAutoSuggest() {
   const calc = calculate();
   if (calc.donationAreaAfter === null) return;
+
+  const totalHouseholds = calc.totalHouseholds;
+  if (totalHouseholds <= 0) return;
+
+  // ── STEP 1: 매입형 세대수를 비율 제약 범위 내 최솟값으로 조정 ──────────────
+  // 규정: 매입형 비율 10% 이상 20% 미만
+  // 사업성 최대화 = 매입형 최소 → 10% 이상을 만족하는 최솟값
+  const BUY_MIN_RATIO = 0.10;
+  const BUY_MAX_RATIO = 0.20; // 미만이므로 실제 상한은 이 미만
+
+  // 현재 매입형 총 세대수
+  const currentBuyTotal = buyUnits.reduce(function(s,u){ return s + (u.count||0); }, 0);
+  const currentBuyRatio = currentBuyTotal / totalHouseholds;
+
+  // 목표 매입형 세대수: 10% 이상 중 최소 정수
+  const minBuyCount = Math.ceil(totalHouseholds * BUY_MIN_RATIO);
+  const maxBuyCount = Math.ceil(totalHouseholds * BUY_MAX_RATIO) - 1; // 20% 미만
+
+  let targetBuyTotal = Math.max(minBuyCount, Math.min(currentBuyTotal, maxBuyCount));
+
+  // 매입형 세대수 조정: 현재 세대수를 비례 축소/확대
+  // 현재 타입 구성 비율을 유지하면서 총합을 targetBuyTotal에 맞춤
+  if (currentBuyTotal !== targetBuyTotal && buyUnits.length > 0) {
+    let workingBuy = buyUnits.map(function(u){ return Object.assign({}, u); });
+    const diff = targetBuyTotal - currentBuyTotal;
+
+    if (diff < 0) {
+      // 줄여야 함: 가장 세대수 많은 타입부터 1씩 차감
+      let toReduce = Math.abs(diff);
+      let guard = 0;
+      while (toReduce > 0 && guard < 10000) {
+        guard++;
+        // 현재 count가 가장 많은 행 찾기
+        let maxIdx = -1, maxCnt = 0;
+        workingBuy.forEach(function(u, i){ if ((u.count||0) > maxCnt){ maxCnt=u.count; maxIdx=i; } });
+        if (maxIdx < 0 || maxCnt <= 0) break;
+        workingBuy[maxIdx].count -= 1;
+        toReduce--;
+      }
+    } else {
+      // 늘려야 함: 가장 세대수 적은 타입부터 1씩 추가
+      let toAdd = diff;
+      let guard = 0;
+      while (toAdd > 0 && guard < 10000) {
+        guard++;
+        let minIdx = -1, minCnt = Infinity;
+        workingBuy.forEach(function(u, i){ if ((u.count||0) < minCnt){ minCnt=u.count; minIdx=i; } });
+        if (minIdx < 0) break;
+        workingBuy[minIdx].count += 1;
+        toAdd--;
+      }
+    }
+    buyUnits = workingBuy;
+  }
+
+  // ── STEP 2: 매입형 조정 후 재계산 (buyRatio 갱신 → H10 재산정) ────────────
+  // H10은 buyRatio에 의존하지 않으므로 donationAreaAfter는 동일하게 사용
   const target = calc.donationAreaAfter;
 
-  let working = donationUnits.map(function(u){ return Object.assign({}, u); });
-  let total = working.reduce(function(s,u){
+  // ── STEP 3: 기부형 세대수를 H10(최소 의무면적) 이상 유지하며 최소화 ────────
+  let workingDon = donationUnits.map(function(u){ return Object.assign({}, u); });
+  let total = workingDon.reduce(function(s,u){
     var t = getType(u.typeId); return s + (u.count||0)*(t.area||0);
   }, 0);
 
-  // 최소 의무면적(target) 이상을 유지하는 선에서, 가능한 한 세대수를 줄여 사업성을 개선
-  // 라운드로빈으로 1세대씩 시험 차감 — 차감 후에도 target 이상이면 적용, target 미만이 되면 그 시도는 취소하고 종료
+  // 큰 면적 타입부터 줄이기 (면적 내림차순 정렬 순서로 시도)
   let guard = 0;
   let cursor = 0;
   while (guard < 5000) {
     guard++;
     let reducedThisRound = false;
-    for (let k = 0; k < working.length; k++) {
-      const idx = (cursor + k) % working.length;
-      const u = working[idx];
-      if (u.count > 0) {
+    for (let k = 0; k < workingDon.length; k++) {
+      const idx = (cursor + k) % workingDon.length;
+      const u = workingDon[idx];
+      if ((u.count||0) > 0) {
         var ta = getType(u.typeId);
         const nextTotal = total - (ta.area||0);
         if (nextTotal >= target) {
           u.count -= 1;
           total = nextTotal;
           reducedThisRound = true;
-          cursor = (idx + 1) % working.length;
+          cursor = (idx + 1) % workingDon.length;
           break;
         }
       }
@@ -1690,9 +1759,25 @@ function applyAutoSuggest() {
     if (!reducedThisRound) break;
   }
 
-  donationUnits = working;
+  donationUnits = workingDon;
   autoApplied = true;
   renderAll();
+
+  // ── STEP 4: 자동제안 결과 검증 메시지 ────────────────────────────────────
+  const afterBuyTotal = buyUnits.reduce(function(s,u){ return s + (u.count||0); }, 0);
+  const afterBuyRatio = afterBuyTotal / totalHouseholds;
+  const noteEl = document.getElementById("autoNote");
+  if (noteEl) {
+    const ratioOK = afterBuyRatio >= BUY_MIN_RATIO && afterBuyRatio < BUY_MAX_RATIO;
+    noteEl.innerHTML =
+      '최소 의무면적을 충족하는 선에서 기부형 세대수를 최대한 줄인 제안입니다.' +
+      '<br>매입형 비율: <b>' + fmtPctVal(afterBuyRatio*100) + '</b> (' + fmtInt(afterBuyTotal) + '세대 / ' + fmtInt(totalHouseholds) + '세대) ' +
+      (ratioOK
+        ? '<span style="color:var(--ok);font-weight:700;">✓ 10%~20% 범위 내</span>'
+        : '<span style="color:var(--warn);font-weight:700;">⚠ 범위 이탈 — 매입형을 수동 조정하세요</span>') +
+      '<br>실제 평면 설계에 맞춰 자유롭게 조정하세요.';
+    noteEl.style.display = "block";
+  }
 }
 
 SIMPLE_FIELD_IDS.forEach(function(id){
