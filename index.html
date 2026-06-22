@@ -934,9 +934,9 @@ function calculate() {
   // Q14 = Q11 ÷ (Q12 × 2)
   const hasCompPrice = compPrice !== null && compPrice > 0;
   const compLandArea = hasCompPrice ? compensationAmt / (compPrice * 2) : null;
-  // 토지환산비율 = 기준용적률(상향) × (1 + 0.7 × (환산면적 ÷ 대지면적)) − 기준용적률(상향)
-  const lossCompRatio = (compLandArea !== null && siteArea > 0)
-    ? targetFAR * (1 + 0.7 * (compLandArea / siteArea)) - targetFAR
+  // 손실보상에 따른 토지환산비율 = 기준용적률 × (1 + 0.7 × (환산면적 ÷ 대지면적)) − 기준용적률
+  const lossCompRatio = (compLandArea !== null && baseFAR !== null && siteArea > 0)
+    ? baseFAR * (1 + 0.7 * (compLandArea / siteArea)) - baseFAR
     : null;
   // Q16 = (기준용적률(상향) − 기준용적률) ÷ 2 − 토지환산비율(Q13)
   // baseFARRounded: 기준용적률을 소수4자리 반올림 적용 (엑셀 수식과 일치)
@@ -1079,11 +1079,11 @@ function renderChain(calc) {
       calc.isCapped ? "상한 1.5 적용됨" : (calc.hasPrices ? "캡 미적용" : null),
       "사업지 공시지가가 서울시 평균보다 낮을수록 값이 커지며, 1.5를 초과할 수 없습니다. 임대주택 의무면적과 용적률 인센티브에 직접 영향을 줍니다."),
     chainStepHTML("5","손실보상 토지환산",
-      "환산면적 = 손실보상액 ÷ (손실보상 토지환산용 공시지가 × 2)",
+      "환산면적 = 손실보상액 ÷ (손실보상 토지환산용 공시지가 × 2)  /  토지환산비율 = 기준용적률 × (1 + 0.7 × (환산면적 ÷ 대지면적)) − 기준용적률",
       calc.compLandArea !== null ? fmtArea(calc.compLandArea) + "㎡" : "손실보상 토지환산용 공시지가 입력 필요",
-      calc.lossCompRatio !== null ? "토지환산비율 " + fmtPctVal(calc.lossCompRatio*100,4) + "  [기준용적률(상향)×(1+0.7×환산면적÷대지면적)−기준용적률(상향)]" : null,
+      calc.lossCompRatio !== null ? "손실보상에 따른 토지환산비율 " + fmtPctVal(calc.lossCompRatio*100,4) : null,
       false, null,
-      "손실보상액을 토지면적으로 환산합니다. 토지환산비율은 기준용적률(상향)을 기준으로 산정하며, 이 비율만큼 임대주택 의무면적에서 차감됩니다."),
+      "손실보상액을 토지면적으로 환산합니다. 토지환산비율은 기준용적률(종상향 전)을 기준으로 산정하며, 이 비율만큼 임대주택 의무면적에서 차감됩니다."),
     chainStepHTML("5-1","세입자 손실보상에 따른 임대주택 완화",
       "(기준용적률(상향) − 기준용적률) ÷ 2 − 토지환산비율",
       calc.lossRelaxRatio !== null
