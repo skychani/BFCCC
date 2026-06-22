@@ -508,9 +508,11 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
 
   <section class="tab-panel active" id="tab-input">
     <div class="cols-2">
+      <!-- ── 좌측 열: 공시지가 · 용도지역 · 정비기반시설 · 손실보상 ── -->
       <div class="panel">
-        <h2 class="panel-title">공시지가 · 용도지역</h2>
+        <h2 class="panel-title">공시지가 · 용도지역 · 정비기반시설 · 손실보상</h2>
 
+        <!-- 공시지가 -->
         <div class="block block-highlight">
           <div class="block-head">
             <h3>공시지가</h3>
@@ -543,17 +545,29 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
               <span class="nf-hint" id="seoulPriceSourceNote"></span>
             </label>
             <label class="nf">
-              <span class="nf-label tip" data-tip="사업시행구역 내 모든 용도지역 대지(지목)의 면적 가중평균 공시지가입니다.">사업지 평균 공시지가</span>
+              <span class="nf-label tip" data-tip="사업시행구역 내 모든 용도지역 대지(지목)의 면적 가중평균 공시지가입니다. 보정계수(K3) 산정에 사용됩니다.">사업지 평균 공시지가</span>
               <div class="nf-input-wrap nf-accent">
                 <input type="text" inputmode="decimal" id="sitePrice" placeholder="예: 4,577,100" />
                 <span class="nf-suffix">원/㎡</span>
               </div>
-              <span class="nf-hint">면적 가중평균 기준 · 손실보상 토지환산에도 동일값 적용</span>
+              <span class="nf-hint">보정계수 K3 = MIN(서울시 평균 ÷ 사업지 평균, 1.5)</span>
             </label>
+          </div>
+          <div class="field-row" style="margin-top:.5rem;">
+            <label class="nf">
+              <span class="nf-label tip" data-tip="손실보상 토지환산 전용 공시지가입니다. 보정계수 산정에 쓰이는 사업지 평균 공시지가와 다를 수 있습니다.&#10;Q14 = 손실보상액 ÷ (이 공시지가 × 2)">손실보상 토지환산용 공시지가<span class="tip-icon" data-tip="엑셀 Q12. 보정계수 산정에 사용되는 사업지 평균 공시지가(N13)와 별도로 입력합니다.">?</span></span>
+              <div class="nf-input-wrap nf-accent">
+                <input type="text" inputmode="decimal" id="compPrice" placeholder="예: 4,161,000" />
+                <span class="nf-suffix">원/㎡</span>
+              </div>
+              <span class="nf-hint">손실보상액 토지환산 전용 — N13과 다를 경우 별도 입력</span>
+            </label>
+            <div></div>
           </div>
           <div class="cf-live" id="cfLive"></div>
         </div>
 
+        <!-- 대지 · 용도지역 -->
         <div class="block">
           <div class="block-head">
             <h3>대지 · 용도지역</h3>
@@ -573,6 +587,7 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
           <button class="btn btn-add btn-sm" id="addZoneBtn">+ 용도지역 추가</button>
         </div>
 
+        <!-- 기준용적률 · 세대수 -->
         <div class="block">
           <div class="field-row">
             <label class="nf">
@@ -585,19 +600,17 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
             </label>
           </div>
         </div>
-      </div>
 
-      <div class="panel">
-        <h2 class="panel-title">정비기반시설 · 손실보상</h2>
+        <!-- 정비기반시설 · 손실보상 -->
         <div class="block">
-          <div class="block-head"><h3>정비기반 · 공동이용시설</h3></div>
+          <div class="block-head"><h3>정비기반시설 · 손실보상<span class="tip-icon" data-tip="정비기반시설 순부담 비율(α)과 세입자 손실보상액이 완화용적률 및 기부채납 임대주택 의무면적 산정에 반영됩니다.">?</span></h3></div>
           <div class="field-row">
             <label class="nf">
-              <span class="nf-label">현황 국공유지 면적<span class="tip-icon" data-tip="사업구역 내 현재 국가 또는 지자체가 소유한 토지 면적입니다. 정비기반시설 순부담 계산 시 차감됩니다.">?</span></span>
+              <span class="nf-label">현황 국공유지 면적<span class="tip-icon" data-tip="사업구역 내 현재 국가 또는 지자체가 소유한 토지 면적입니다. 정비기반시설 순부담 계산 시 차감됩니다.&#10;α = (정비기반시설 설치면적 − 국공유지 면적) ÷ 대지면적">?</span></span>
               <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="publicLand" /><span class="nf-suffix">㎡</span></div>
             </label>
             <label class="nf">
-              <span class="nf-label">정비기반시설 설치면적<span class="tip-icon" data-tip="도로, 공원 등 사업으로 새로 설치·기부채납하는 정비기반시설의 전체 면적입니다.">?</span></span>
+              <span class="nf-label">정비기반시설 설치면적<span class="tip-icon" data-tip="도로, 공원 등 사업으로 새로 설치·기부채납하는 정비기반시설의 전체 면적입니다.&#10;순부담 = 설치면적 − 국공유지 면적">?</span></span>
               <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="infraArea" /><span class="nf-suffix">㎡</span></div>
             </label>
           </div>
@@ -607,11 +620,17 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
               <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="communityArea" /><span class="nf-suffix">㎡</span></div>
             </label>
             <label class="nf">
-              <span class="nf-label">세입자 손실보상액<span class="tip-icon" data-tip="영업·주거 세입자에게 지급하는 손실보상 총액입니다. 토지면적으로 환산되어 임대주택 의무비율에서 일부 차감됩니다.">?</span></span>
+              <span class="nf-label">세입자 손실보상액<span class="tip-icon" data-tip="영업·주거 세입자에게 지급하는 손실보상 총액입니다.&#10;토지환산 = 손실보상액 ÷ (손실보상 토지환산용 공시지가 × 2)&#10;환산된 토지면적 비율만큼 임대주택 의무비율에서 차감됩니다.">?</span></span>
               <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="compensationAmt" /><span class="nf-suffix">원</span></div>
             </label>
           </div>
         </div>
+
+      </div><!-- /좌측 패널 끝 -->
+
+      <!-- ── 우측 열: 임대·분양 세대수 ── -->
+      <div class="panel">
+        <h2 class="panel-title">세대수 배분</h2>
 
         <div class="block">
           <div class="unit-head">
@@ -649,8 +668,8 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
           <button class="btn btn-add btn-sm" id="addSaleBtn">+ 타입 추가</button>
           <div class="unit-footer" id="saleFooter"></div>
         </div>
-      </div>
-    </div>
+      </div><!-- /우측 패널 끝 -->
+    </div><!-- /cols-2 끝 -->
   </section>
 
   <section class="tab-panel" id="tab-calc">
@@ -813,11 +832,11 @@ let saleUnits = DEFAULT_SALE_UNITS.map(function(u){ return Object.assign({}, u);
 let autoApplied = false;
 
 const SIMPLE_FIELD_IDS = [
-  "seoulPrice","sitePrice","targetFAR","totalHouseholds",
+  "seoulPrice","sitePrice","compPrice","targetFAR","totalHouseholds",
   "publicLand","infraArea","communityArea","compensationAmt"
 ];
 const SIMPLE_DEFAULTS = {
-  seoulPrice: 6302982, sitePrice: 4577100,
+  seoulPrice: 6302982, sitePrice: 4577100, compPrice: 4161000,
   targetFAR: 250, totalHouseholds: 556,
   publicLand: 528, infraArea: 2032.71, communityArea: 912.67,
   compensationAmt: 6289566541
@@ -831,6 +850,7 @@ function getFieldVal(id) {
 function calculate() {
   const seoulPrice = getFieldVal("seoulPrice");
   const sitePrice = getFieldVal("sitePrice");
+  const compPrice = getFieldVal("compPrice");          // Q12: 손실보상 토지환산 전용 공시지가
   const targetFARPct = getFieldVal("targetFAR") || 0;
   const targetFAR = targetFARPct / 100;
   const totalHouseholds = getFieldVal("totalHouseholds") || 0;
@@ -847,13 +867,18 @@ function calculate() {
   const alpha = landArea > 0 ? netBurden / landArea : null;
   const relaxedBaseFAR = alpha !== null ? targetFAR * (1 + 1.3 * alpha) : null;
 
+  // 보정계수: N12(서울시) / N13(사업지 평균) — sitePrice 사용
   const hasPrices = seoulPrice !== null && sitePrice !== null && sitePrice > 0;
   const rawRatio = hasPrices ? seoulPrice / sitePrice : null;
   const correctionFactor = hasPrices ? Math.min(rawRatio, 1.5) : null;
   const isCapped = hasPrices ? rawRatio >= 1.5 : false;
 
+  // 손실보상 토지환산: Q12(손실보상 전용 공시지가) 사용 — sitePrice와 별도
+  const hasCompPrice = compPrice !== null && compPrice > 0;
+  // Q14 = Q11 / (Q12 * 2)
+  const compLandArea = hasCompPrice ? compensationAmt / (compPrice * 2) : null;
+  // Q13 = E7 * (1 + 0.7 * (Q14/E3)) - E7
   const baseFARRounded = baseFAR !== null ? Math.round(baseFAR * 10000) / 10000 : null;
-  const compLandArea = hasPrices && sitePrice > 0 ? compensationAmt / (sitePrice * 2) : null;
   const lossCompRatio = (compLandArea !== null && baseFARRounded !== null && landArea > 0)
     ? baseFARRounded * (1 + 0.7 * (compLandArea / landArea)) - baseFARRounded
     : null;
@@ -911,7 +936,7 @@ function calculate() {
 
   return {
     landArea: landArea, baseFAR: baseFAR, netBurden: netBurden, alpha: alpha, relaxedBaseFAR: relaxedBaseFAR,
-    hasPrices: hasPrices, rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped,
+    hasPrices: hasPrices, hasCompPrice: hasCompPrice, rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped,
     compLandArea: compLandArea, lossCompRatio: lossCompRatio, communityBonusFAR: communityBonusFAR,
     buyHouseholdsTotal: buyHouseholdsTotal, donationHouseholdsTotal: donationHouseholdsTotal, buyRatio: buyRatio,
     buyPlanTotal: buyPlanTotal,
@@ -979,11 +1004,11 @@ function renderChain(calc) {
       calc.isCapped ? "상한 1.5 캡 적용됨" : (calc.hasPrices ? "캡 미적용" : null),
       "사업지 공시지가가 서울시 평균보다 낮을수록 값이 커지며, 1.5를 초과할 수 없습니다. 임대주택 의무면적과 용적률 인센티브에 직접 영향을 줍니다."),
     chainStepHTML("5","손실보상 토지환산",
-      "환산면적 = 손실보상액 ÷ (사업지공시지가 × 2)",
-      calc.compLandArea !== null ? fmtArea(calc.compLandArea) + "㎡" : "공시지가 입력 필요",
+      "환산면적 = 손실보상액 ÷ (손실보상 토지환산용 공시지가 × 2)",
+      calc.compLandArea !== null ? fmtArea(calc.compLandArea) + "㎡" : "손실보상 토지환산용 공시지가 입력 필요",
       calc.lossCompRatio !== null ? "토지환산비율 " + fmtPctVal(calc.lossCompRatio*100) : null,
       false, null,
-      "세입자 손실보상액을 토지면적으로 환산한 값으로, 임대주택 의무비율 산정 시 일부를 차감해줍니다."),
+      "세입자 손실보상액을 토지면적으로 환산한 값입니다. 보정계수 산정에 쓰이는 사업지 평균 공시지가와 별도로 입력된 손실보상 토지환산용 공시지가를 사용합니다."),
     chainStepHTML("6","기부채납 임대주택 면적",
       "대지면적 × ((기준용적률(상향)−기준용적률)÷2÷보정계수 − 손실보상비율)",
       calc.donationAreaAfter !== null ? fmtArea(calc.donationAreaAfter) + "㎡" : "—",
@@ -1004,15 +1029,19 @@ function renderCFLive(calc) {
   const el = document.getElementById("cfLive");
   if (!el) return;
   if (!calc.hasPrices) {
-    el.innerHTML = '<span class="cf-live-empty">두 공시지가를 모두 입력하면 보정계수가 자동으로 계산됩니다.</span>';
+    el.innerHTML = '<span class="cf-live-empty">서울시·사업지 평균 공시지가를 모두 입력하면 보정계수가 자동으로 계산됩니다.</span>';
     return;
   }
+  const compNote = calc.hasCompPrice
+    ? '<span class="cf-live-detail num" style="margin-top:.25rem;display:block;">손실보상 환산 공시지가 ' + fmtNum(getFieldVal("compPrice"),0) + '원/㎡ — 보정계수와 별도 적용</span>'
+    : '<span class="cf-live-detail" style="margin-top:.25rem;display:block;color:var(--warn);">⚠ 손실보상 토지환산용 공시지가 미입력 — 손실보상비율 미산정</span>';
   el.innerHTML =
     '<div><div class="cf-live-label">산출된 사업성보정계수</div>' +
     '<div class="cf-live-value num">' + fmtNum(calc.correctionFactor,2) + '</div></div>' +
     '<div style="text-align:right;">' +
     (calc.isCapped ? '<span class="cf-live-flag">상한 1.5 캡 적용</span><br>' : '') +
     '<span class="cf-live-detail num">원시 비율 ' + fmtNum(calc.rawRatio,2) + ' (' + fmtNum(calc.rawRatio*100,2) + '%)</span>' +
+    compNote +
     '</div>';
 }
 
