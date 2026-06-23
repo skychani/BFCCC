@@ -76,6 +76,24 @@ body{ margin:0; font-family:var(--font); }
 }
 .json-toast.show{ opacity:1; }
 .json-toast.err{ background:var(--warn); }
+
+/* 프로젝트 로드 뱃지 */
+.project-badge{
+  display:inline-flex; align-items:center; gap:.4rem;
+  font-size:.72rem; font-weight:700; letter-spacing:.01em;
+  padding:.3rem .75rem; border-radius:20px;
+  background:rgba(189,107,62,0.18); color:var(--copper);
+  border:1.5px solid rgba(189,107,62,0.4);
+  white-space:nowrap; line-height:1;
+}
+.project-badge-dot{
+  width:.45rem; height:.45rem; border-radius:50%;
+  background:var(--copper); flex-shrink:0;
+  animation: pblink 2s ease-in-out infinite;
+}
+@keyframes pblink{
+  0%,100%{ opacity:1; } 50%{ opacity:.3; }
+}
 .tab-num{
   font-size:.65rem; font-weight:700; width:1.3rem; height:1.3rem; border-radius:50%;
   background:#2a3850; color:#9aa6c2; display:flex; align-items:center; justify-content:center;
@@ -538,6 +556,10 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
       <button class="tab-btn" data-tab="tab-result"><span class="tab-num">3</span>결과요약</button>
       <button class="tab-btn" data-tab="tab-overview"><span class="tab-num">4</span>총괄보기</button>
       <div class="json-bar">
+        <span class="project-badge" id="projectBadge" style="display:none;">
+          <span class="project-badge-dot"></span>
+          <span id="projectBadgeName"></span> 로드됨
+        </span>
         <button class="json-btn" id="jsonSaveBtn" title="현재 입력값 전체를 JSON 파일로 저장합니다">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-.15em;margin-right:.3rem;"><path d="M8 1v9M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>저장
         </button>
@@ -2123,8 +2145,65 @@ document.getElementById("jsonFileInput").addEventListener("change", function(e){
   reader.readAsText(file, "utf-8");
 });
 
-updateSeoulPriceSourceNote();
-renderAll();
+// ─── localStorage 자동저장 ────────────────────────────────────────────────────
+const LS_KEY = "bfccc_autosave";
+
+function autoSave() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(collectState()));
+  } catch(e) { /* 무시 */ }
+}
+
+// 모든 입력 이벤트 후 자동저장 (renderAll 래핑)
+var _origRenderAll = renderAll;
+renderAll = function(skipAutoSave) {
+  _origRenderAll.apply(this, arguments);
+  if (!skipAutoSave) autoSave();
+};
+
+// ─── 초기화: URL ?project= → fetch → localStorage → 기본값 ──────────────────
+(async function initProject() {
+  const params = new URLSearchParams(location.search);
+  const projectParam = params.get("project");
+
+  if (projectParam) {
+    // 1순위: URL 파라미터 fetch
+    const fileName = projectParam.replace(/[^a-zA-Z0-9가-힣_\-\.]/g, ""); // 경로 탐색 방어
+    const url = "./data/" + fileName + ".json";
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const state = await res.json();
+      applyState(state);
+      // 뱃지 표시
+      var badge = document.getElementById("projectBadge");
+      document.getElementById("projectBadgeName").textContent = fileName;
+      badge.style.display = "inline-flex";
+      showToast("✓ " + fileName + " 로드됨");
+    } catch(err) {
+      showToast("✕ " + fileName + ".json 로드 실패: " + err.message, true);
+      // fetch 실패 시 localStorage fallback
+      _tryLoadLocalStorage();
+    }
+  } else {
+    // 2순위: localStorage 자동저장값
+    _tryLoadLocalStorage();
+  }
+
+  updateSeoulPriceSourceNote();
+  renderAll(true); // 초기 렌더 (자동저장 트리거 없이)
+})();
+
+function _tryLoadLocalStorage() {
+  try {
+    var raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      var state = JSON.parse(raw);
+      applyState(state);
+    }
+    // raw 없으면 3순위: 기본 내장 데이터 (SIMPLE_DEFAULTS 이미 적용됨)
+  } catch(e) { /* localStorage 파싱 실패 시 기본값 유지 */ }
+}
 </script>
 </body>
 </html>

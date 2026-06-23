@@ -1,0 +1,134 @@
+{
+  "version": "bfccc-v1",
+  "savedAt": "2026-06-22T23:15:53.331Z",
+  "projectType": "redev",
+  "fields": {
+    "seoulPrice": "6,302,982",
+    "sitePrice": "4,876,623",
+    "compPrice": "0",
+    "targetFAR": "250",
+    "totalHouseholds": "550",
+    "siteArea": "15,547.6000",
+    "publicLand": "2,160.0000",
+    "infraArea": "3,074.4000",
+    "communityArea": "180.0000",
+    "compensationAmt": "0",
+    "seoulPriceYear": "2025"
+  },
+  "zones": [
+    {
+      "id": "id2",
+      "name": "2종일반주거지역",
+      "area": 18456.9,
+      "farPct": 200
+    },
+    {
+      "id": "id3",
+      "name": "3종일반주거지역",
+      "area": 165.1,
+      "farPct": 250
+    }
+  ],
+  "saleUnits": [
+    {
+      "id": "t1",
+      "name": "44A",
+      "area": 64.6807,
+      "baseCount": 50
+    },
+    {
+      "id": "t3",
+      "name": "59A",
+      "area": 85.6222,
+      "baseCount": 122
+    },
+    {
+      "id": "t4",
+      "name": "59B",
+      "area": 84.3371,
+      "baseCount": 134
+    },
+    {
+      "id": "t5",
+      "name": "59C",
+      "area": 87.3754,
+      "baseCount": 40
+    },
+    {
+      "id": "t7",
+      "name": "84A",
+      "area": 118.5573,
+      "baseCount": 61
+    },
+    {
+      "id": "t8",
+      "name": "84B",
+      "area": 118.5048,
+      "baseCount": 10
+    }
+  ],
+  "donationUnits": [
+    {
+      "id": "d1",
+      "typeId": "t1",
+      "planCount": 11,
+      "count": 9
+    },
+    {
+      "id": "d3",
+      "typeId": "t3",
+      "planCount": 9,
+      "count": 7
+    },
+    {
+      "id": "d4",
+      "typeId": "t4",
+      "planCount": 15,
+      "count": 11
+    },
+    {
+      "id": "d5",
+      "typeId": "t5",
+      "planCount": 3,
+      "count": 2
+    },
+    {
+      "id": "d7",
+      "typeId": "t7",
+      "planCount": 5,
+      "count": 4
+    },
+    {
+      "id": "d8",
+      "typeId": "t8",
+      "planCount": 3,
+      "count": 2
+    }
+  ],
+  "buyUnits": [
+    {
+      "id": "b1",
+      "typeId": "t1",
+      "planCount": 66,
+      "count": 53
+    },
+    {
+      "id": "b3",
+      "typeId": "t3",
+      "planCount": 0,
+      "count": 0
+    },
+    {
+      "id": "b4",
+      "typeId": "t4",
+      "planCount": 21,
+      "count": 14
+    },
+    {
+      "id": "b5",
+      "typeId": "t5",
+      "planCount": 0,
+      "count": 0
+    }
+  ]
+}
