@@ -1,0 +1,170 @@
+{
+  "version": "bfccc-v1",
+  "savedAt": "2026-06-22T08:49:05.698Z",
+  "projectType": "redev",
+  "fields": {
+    "seoulPrice": "6,302,982",
+    "sitePrice": "4,577,100",
+    "compPrice": "4,161,000",
+    "targetFAR": "250",
+    "totalHouseholds": "556",
+    "siteArea": "16,748.2900",
+    "publicLand": "528",
+    "infraArea": "2,032.71",
+    "communityArea": "912.67",
+    "compensationAmt": "6,289,566,541",
+    "seoulPriceYear": "2025"
+  },
+  "zones": [
+    {
+      "id": "id1",
+      "name": "1종일반주거지역",
+      "area": 12161.97,
+      "farPct": 150
+    },
+    {
+      "id": "id2",
+      "name": "2종일반주거지역",
+      "area": 4586.32,
+      "farPct": 200
+    }
+  ],
+  "saleUnits": [
+    {
+      "id": "t1",
+      "name": "44A",
+      "area": 63.855,
+      "baseCount": 25
+    },
+    {
+      "id": "t2",
+      "name": "44B",
+      "area": 64.393,
+      "baseCount": 6
+    },
+    {
+      "id": "t3",
+      "name": "59A",
+      "area": 85.9489,
+      "baseCount": 145
+    },
+    {
+      "id": "t4",
+      "name": "59B",
+      "area": 86.3285,
+      "baseCount": 29
+    },
+    {
+      "id": "t5",
+      "name": "59C",
+      "area": 84.1189,
+      "baseCount": 93
+    },
+    {
+      "id": "t6",
+      "name": "59D",
+      "area": 85.4207,
+      "baseCount": 18
+    },
+    {
+      "id": "t7",
+      "name": "84A",
+      "area": 118.6246,
+      "baseCount": 90
+    },
+    {
+      "id": "t8",
+      "name": "84B",
+      "area": 119.0234,
+      "baseCount": 20
+    }
+  ],
+  "donationUnits": [
+    {
+      "id": "d1",
+      "typeId": "t1",
+      "planCount": 2,
+      "count": 2
+    },
+    {
+      "id": "d2",
+      "typeId": "t2",
+      "planCount": 2,
+      "count": 2
+    },
+    {
+      "id": "d3",
+      "typeId": "t3",
+      "planCount": 24,
+      "count": 14
+    },
+    {
+      "id": "d4",
+      "typeId": "t4",
+      "planCount": 24,
+      "count": 14
+    },
+    {
+      "id": "d5",
+      "typeId": "t5",
+      "planCount": 12,
+      "count": 9
+    },
+    {
+      "id": "d6",
+      "typeId": "t6",
+      "planCount": 4,
+      "count": 4
+    },
+    {
+      "id": "d7",
+      "typeId": "t7",
+      "planCount": 3,
+      "count": 3
+    },
+    {
+      "id": "d8",
+      "typeId": "t8",
+      "planCount": 3,
+      "count": 3
+    }
+  ],
+  "buyUnits": [
+    {
+      "id": "b1",
+      "typeId": "t1",
+      "planCount": 14,
+      "count": 14
+    },
+    {
+      "id": "b2",
+      "typeId": "t2",
+      "planCount": 6,
+      "count": 6
+    },
+    {
+      "id": "b3",
+      "typeId": "t3",
+      "planCount": 14,
+      "count": 14
+    },
+    {
+      "id": "b4",
+      "typeId": "t4",
+      "planCount": 14,
+      "count": 14
+    },
+    {
+      "id": "b5",
+      "typeId": "t5",
+      "planCount": 6,
+      "count": 6
+    },
+    {
+      "id": "b6",
+      "typeId": "t6",
+      "planCount": 2,
+      "count": 2
+    }
+  ]
+}
