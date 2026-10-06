@@ -1,6 +1,6 @@
 {
   "version": "bfccc-v1",
-  "savedAt": "2026-06-22T08:49:05.698Z",
+  "savedAt": "2026-10-06T02:16:32.413Z",
   "projectType": "redev",
   "fields": {
     "seoulPrice": "6,302,982",
@@ -9,9 +9,9 @@
     "targetFAR": "250",
     "totalHouseholds": "556",
     "siteArea": "16,748.2900",
-    "publicLand": "528",
+    "publicLand": "528.0000",
     "infraArea": "2,032.71",
-    "communityArea": "912.67",
+    "communityArea": "912.6522",
     "compensationAmt": "6,289,566,541",
     "seoulPriceYear": "2025"
   },
@@ -33,49 +33,49 @@
     {
       "id": "t1",
       "name": "44A",
-      "area": 63.855,
+      "area": 63.5965,
       "baseCount": 25
     },
     {
       "id": "t2",
       "name": "44B",
-      "area": 64.393,
+      "area": 64.2137,
       "baseCount": 6
     },
     {
       "id": "t3",
       "name": "59A",
-      "area": 85.9489,
+      "area": 85.9687,
       "baseCount": 145
     },
     {
       "id": "t4",
       "name": "59B",
-      "area": 86.3285,
+      "area": 86.3454,
       "baseCount": 29
     },
     {
       "id": "t5",
       "name": "59C",
-      "area": 84.1189,
+      "area": 84.1366,
       "baseCount": 93
     },
     {
       "id": "t6",
       "name": "59D",
-      "area": 85.4207,
+      "area": 85.4377,
       "baseCount": 18
     },
     {
       "id": "t7",
       "name": "84A",
-      "area": 118.6246,
+      "area": 118.5618,
       "baseCount": 90
     },
     {
       "id": "t8",
       "name": "84B",
-      "area": 119.0234,
+      "area": 118.9604,
       "baseCount": 20
     }
   ],
@@ -84,7 +84,7 @@
       "id": "d1",
       "typeId": "t1",
       "planCount": 2,
-      "count": 2
+      "count": 1
     },
     {
       "id": "d2",
