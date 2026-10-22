@@ -206,6 +206,45 @@ body{ margin:0; font-family:var(--font); }
 }
 .chain-step-hl .chain-result{ color:var(--copper-deep); }
 .chain-sub{ font-size:.74rem; color:var(--slate-light); margin:.35rem 0 0; }
+.chain-calc{
+  font-size:.78rem; color:var(--navy); margin:0 0 .55rem; line-height:1.6; font-weight:500;
+  background:#f1f3f6; border-left:3px solid var(--copper); padding:.4rem .65rem; border-radius:0 5px 5px 0;
+  overflow-wrap:anywhere;
+}
+
+/* ── 용적률 단계별 구성표 ── */
+.far-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.far-table{ width:100%; border-collapse:collapse; font-size:.84rem; min-width:760px; }
+.far-table th{
+  text-align:left; font-size:.68rem; color:var(--slate-light); font-weight:700;
+  padding:.5rem .55rem; border-bottom:1.5px solid var(--ink); white-space:nowrap;
+}
+.far-table th.num-col{ text-align:right; }
+.far-table td{ padding:.6rem .55rem; border-bottom:1px solid var(--line); vertical-align:middle; }
+.far-table td.num{ text-align:right; white-space:nowrap; }
+.far-op{ width:1.6rem; text-align:center; font-weight:700; font-size:1rem; color:var(--copper-deep); }
+.far-name{ font-weight:700; color:var(--navy); white-space:nowrap; }
+.far-f{ font-size:.74rem; color:var(--slate); }
+.far-a{ font-weight:700; color:var(--copper-deep); }
+.far-cum{ font-weight:700; color:var(--ink); }
+.far-bar-h{ width:26%; }
+.far-row-base td{ background:#f7f9fc; }
+.far-row-sub td{ padding-top:.35rem; padding-bottom:.35rem; font-size:.78rem; background:#fcfcfd; }
+.far-row-sub .far-name{ font-weight:500; color:var(--slate); padding-left:1.1rem; }
+.far-row-sub td.num{ color:var(--slate); font-weight:500; }
+.far-row-hl td{ background:var(--copper-soft); }
+.far-total td{ border-top:2px solid var(--ink); border-bottom:none; font-weight:700; font-size:.92rem; padding-top:.75rem; }
+.far-total .far-a{ font-size:1.05rem; }
+.wf-track{ position:relative; height:12px; background:#eef0f4; border-radius:3px; overflow:hidden; }
+.wf-prev{ position:absolute; left:0; top:0; bottom:0; background:#dfe3ea; }
+.wf-seg{ position:absolute; top:0; bottom:0; border-radius:2px; }
+.far-summary{
+  margin-top:1rem; padding:.9rem 1.1rem; background:var(--ink); color:#fff; border-radius:8px;
+  font-size:.86rem; line-height:1.8;
+}
+.far-summary b{ color:var(--copper); }
+.far-summary .far-big{ font-size:1.05rem; color:#ffd9bb; }
+.far-summary-alt{ color:#a7b0c2; font-size:.8rem; }
 
 .kpi-hero{ margin-bottom:.75rem; }
 .kpi-hero > div{
@@ -560,6 +599,7 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
           <span class="project-badge-dot"></span>
           <span id="projectBadgeName"></span> 로드됨
         </span>
+        <button class="json-btn" id="resetAllBtn" title="모든 입력값을 지우고 빈 상태로 새로 시작합니다">새로 작성</button>
         <button class="json-btn" id="jsonSaveBtn" title="현재 입력값 전체를 JSON 파일로 저장합니다">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-.15em;margin-right:.3rem;"><path d="M8 1v9M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>저장
         </button>
@@ -600,10 +640,10 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
                   <span class="nf-suffix">원/㎡</span>
                 </div>
                 <select id="seoulPriceYear" class="nf-year-select" title="공시지가 기준연도">
-                  <option value="2025" selected>2025년</option>
+                  <option value="2025">2025년</option>
                   <option value="2024">2024년</option>
                   <option value="2023">2023년</option>
-                  <option value="custom">직접입력</option>
+                  <option value="custom" selected>직접입력</option>
                 </select>
               </div>
               <span class="nf-hint" id="seoulPriceSourceNote"></span>
@@ -648,14 +688,15 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
         </div>
 
         <div class="block">
+          <p class="nf-hint" style="margin:0 0 1rem;">끝수 처리: 면적 소수점 4자리 절삭 · 용적률/비율(%) 소수점 셋째자리 반올림 · 계수(α 등) 소수점 5자리 반올림 · 보정계수 셋째자리 올림</p>
           <div class="field-row">
             <label class="nf">
               <span class="nf-label">기준용적률(종상향 목표)<span class="tip-icon" data-tip="용도지역 종상향을 통해 받을 수 있는 최대 허용 용적률입니다. 통상 250%가 적용됩니다.">?</span></span>
-              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="targetFAR" /><span class="nf-suffix">%</span></div>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="targetFAR" placeholder="예: 250" /><span class="nf-suffix">%</span></div>
             </label>
             <label class="nf">
               <span class="nf-label">계획 세대수(전체)<span class="tip-icon" data-tip="기부형·매입형 임대주택과 일반분양을 포함한 사업 전체 계획 세대수입니다. 아래 세대수 입력 합계와 일치해야 합니다.">?</span></span>
-              <div class="nf-input-wrap"><input type="text" inputmode="numeric" id="totalHouseholds" /><span class="nf-suffix">세대</span></div>
+              <div class="nf-input-wrap"><input type="text" inputmode="numeric" id="totalHouseholds" placeholder="예: 556" /><span class="nf-suffix">세대</span></div>
             </label>
           </div>
           <div id="totalMismatchWarn" style="display:none;margin-top:.5rem;padding:.5rem .75rem;background:var(--warn-soft);color:var(--warn);border-radius:6px;font-size:.76rem;font-weight:600;line-height:1.5;border-left:3px solid var(--warn);"></div>
@@ -671,21 +712,21 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
           <div class="field-row">
             <label class="nf">
               <span class="nf-label">현황 국공유지 면적<span class="tip-icon" data-tip="사업구역 내 현재 국가 또는 지자체가 소유한 토지 면적입니다. 정비기반시설 순부담 계산 시 차감됩니다.">?</span></span>
-              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="publicLand" /><span class="nf-suffix">㎡</span></div>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="publicLand" placeholder="0.0000" /><span class="nf-suffix">㎡</span></div>
             </label>
             <label class="nf">
               <span class="nf-label">정비기반시설 설치면적<span class="tip-icon" data-tip="도로, 공원 등 사업으로 새로 설치·기부채납하는 정비기반시설의 전체 면적입니다.">?</span></span>
-              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="infraArea" /><span class="nf-suffix">㎡</span></div>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="infraArea" placeholder="0.0000" /><span class="nf-suffix">㎡</span></div>
             </label>
           </div>
           <div class="field-row">
             <label class="nf">
               <span class="nf-label">공동이용시설 설치면적<span class="tip-icon" data-tip="작은도서관, 주민공동시설 등 설치 시 추가 용적률 인센티브를 받는 공동이용시설의 면적입니다.">?</span></span>
-              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="communityArea" /><span class="nf-suffix">㎡</span></div>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="communityArea" placeholder="0.0000" /><span class="nf-suffix">㎡</span></div>
             </label>
             <label class="nf">
               <span class="nf-label">세입자 손실보상액<span class="tip-icon" data-tip="영업·주거 세입자에게 지급하는 손실보상 총액입니다. 아래 손실보상 토지환산용 공시지가와 함께 토지면적으로 환산되어 임대주택 의무비율에서 차감됩니다.">?</span></span>
-              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="compensationAmt" /><span class="nf-suffix">원</span></div>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="compensationAmt" placeholder="없으면 비워두기" /><span class="nf-suffix">원</span></div>
             </label>
           </div>
           <div class="field-row">
@@ -741,8 +782,13 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
 
   <section class="tab-panel" id="tab-calc">
     <div class="panel">
+      <h2 class="panel-title">용적률 단계별 구성</h2>
+      <p class="panel-sub">기준용적률 → 종상향(기부형 임대 + 분양) → 정비기반시설 → 매입임대 → 공동이용시설 순으로 쌓여 상한용적률이 됩니다.</p>
+      <div id="farStack"></div>
+    </div>
+    <div class="panel" style="margin-top:1.2rem;">
       <h2 class="panel-title">단계별 계산</h2>
-      <p class="panel-sub">7단계 산식이 입력값 변경에 따라 실시간으로 재계산됩니다.</p>
+      <p class="panel-sub">각 단계의 산식과 실제 값 대입 결과입니다. 입력값 변경 시 실시간으로 재계산됩니다.</p>
       <ol class="chain" id="chainList"></ol>
     </div>
   </section>
@@ -845,7 +891,7 @@ function liveFormat(str) {
 }
 function formatAreaOnBlur(el) {
   const v = parseNum(el.value);
-  el.value = v === null ? "" : liveFormat(v.toFixed(4));
+  el.value = v === null ? "" : liveFormat(qA(v).toFixed(4));
 }
 
 let uid = 1;
@@ -859,152 +905,133 @@ const SEOUL_PRICE_TABLE = {
 };
 let projectType = "redev"; // 'redev' | 'recon'
 
-let zones = [
-  { id: nextId(), name: "1종일반주거지역", area: 12161.97, farPct: 150 },
-  { id: nextId(), name: "2종일반주거지역", area: 4586.32, farPct: 200 },
-];
-
-const DEFAULT_SALE_UNITS = [
-  { id: "t1", name: "44A", area: 63.8550, baseCount: 25 },
-  { id: "t2", name: "44B", area: 64.3930, baseCount: 6 },
-  { id: "t3", name: "59A", area: 85.9489, baseCount: 145 },
-  { id: "t4", name: "59B", area: 86.3285, baseCount: 29 },
-  { id: "t5", name: "59C", area: 84.1189, baseCount: 93 },
-  { id: "t6", name: "59D", area: 85.4207, baseCount: 18 },
-  { id: "t7", name: "84A", area: 118.6246, baseCount: 90 },
-  { id: "t8", name: "84B", area: 119.0234, baseCount: 20 },
-];
-
-// 기부형/매입형은 typeId + 세대수만 관리 (타입명·면적은 saleUnits에서 참조)
-const DEFAULT_DONATION_UNITS = [
-  { id: "d1", typeId: "t1", planCount: 2,  count: 2  },
-  { id: "d2", typeId: "t2", planCount: 2,  count: 2  },
-  { id: "d3", typeId: "t3", planCount: 24, count: 24 },
-  { id: "d4", typeId: "t4", planCount: 24, count: 24 },
-  { id: "d5", typeId: "t5", planCount: 12, count: 12 },
-  { id: "d6", typeId: "t6", planCount: 4,  count: 4  },
-  { id: "d7", typeId: "t7", planCount: 3,  count: 3  },
-  { id: "d8", typeId: "t8", planCount: 3,  count: 3  },
-];
-const DEFAULT_BUY_UNITS = [
-  { id: "b1", typeId: "t1", planCount: 14, count: 14 },
-  { id: "b2", typeId: "t2", planCount: 6,  count: 6  },
-  { id: "b3", typeId: "t3", planCount: 14, count: 14 },
-  { id: "b4", typeId: "t4", planCount: 14, count: 14 },
-  { id: "b5", typeId: "t5", planCount: 6,  count: 6  },
-  { id: "b6", typeId: "t6", planCount: 2,  count: 2  },
-];
+// 초기값 없음 — 모든 값은 사용자가 직접 입력하거나 JSON으로 불러온다
+let zones = [ { id: nextId(), name: "", area: null, farPct: null } ];
 
 // typeId → {name, area} 조회 헬퍼
 function getType(typeId) {
   return saleUnits.find(function(t){ return t.id === typeId; }) || { name: "—", area: 0 };
 }
 
-let saleUnits = DEFAULT_SALE_UNITS.map(function(u){ return Object.assign({}, u); });
-let donationUnits = DEFAULT_DONATION_UNITS.map(function(u){ return Object.assign({}, u); });
-let buyUnits = DEFAULT_BUY_UNITS.map(function(u){ return Object.assign({}, u); });
+// 기부형/매입형은 typeId + 세대수만 관리 (타입명·면적은 saleUnits에서 참조)
+let saleUnits = [];
+let donationUnits = [];
+let buyUnits = [];
 let autoApplied = false;
 
 const SIMPLE_FIELD_IDS = [
   "seoulPrice","sitePrice","compPrice","targetFAR","totalHouseholds",
   "siteArea","publicLand","infraArea","communityArea","compensationAmt"
 ];
-const SIMPLE_DEFAULTS = {
-  seoulPrice: 6302982, sitePrice: 4577100, compPrice: 4161000,
-  targetFAR: 250, totalHouseholds: 556,
-  siteArea: 16748.29,
-  publicLand: 528, infraArea: 2032.71, communityArea: 912.67,
-  compensationAmt: 6289566541
-};
 
 function getFieldVal(id) {
   const el = document.getElementById(id);
   return parseNum(el.value);
 }
 
+// ─── 끝수 처리 ──────────────────────────────────────────────────────────────
+// 면적(㎡): 소수점 4자리 절삭 / 용적률·비율(%): 소수점 셋째자리에서 반올림(2자리)
+// 계수(α·손실보상 환산비율): 소수점 5자리 반올림
+function fix(n, d, mode) {
+  if (n === null || n === undefined || !isFinite(n)) return null;
+  const p = Math.pow(10, d);
+  const v = parseFloat((n * p).toPrecision(12)); // 부동소수 오차 제거 후 끝수 처리
+  const r = mode === "round" ? Math.sign(v) * Math.round(Math.abs(v)) : Math.trunc(v);
+  return r / p;
+}
+function qA(n) { return fix(n, 4, "trunc"); }
+function qP(n) { return fix(n, 2, "round"); }
+function qR(n) { return fix(n, 5, "round"); }
+// 이미 끝수 처리된 % 값끼리의 합산 (부동소수 오차만 제거)
+function addP() {
+  let s = 0;
+  for (let i = 0; i < arguments.length; i++) s += arguments[i];
+  return Math.round(s * 100) / 100;
+}
+
 function calculate() {
   const seoulPrice = getFieldVal("seoulPrice");
   const sitePrice = getFieldVal("sitePrice");
-  const compPrice = getFieldVal("compPrice");       // Q12: 손실보상 토지환산 전용 공시지가
-  const targetFARPct = getFieldVal("targetFAR") || 0;
-  const targetFAR = targetFARPct / 100;
+  const compPrice = getFieldVal("compPrice");        // 손실보상 토지환산 전용 공시지가
+  const targetPct = getFieldVal("targetFAR");          // 기준용적률(상향) %
+  const hasTarget = targetPct !== null && targetPct > 0;
   const totalHouseholds = getFieldVal("totalHouseholds") || 0;
-  const siteArea = getFieldVal("siteArea") || 0;    // E3: 대지면적 (직접 입력)
-  const publicLand = getFieldVal("publicLand") || 0;
-  const infraArea = getFieldVal("infraArea") || 0;
-  const communityArea = getFieldVal("communityArea") || 0;
+  const siteArea = qA(getFieldVal("siteArea"));        // 대지면적
+  const hasSite = siteArea !== null && siteArea > 0;
+  const publicLand = qA(getFieldVal("publicLand")) || 0;
+  const infraArea = qA(getFieldVal("infraArea")) || 0;
+  const communityArea = qA(getFieldVal("communityArea")) || 0;
   const compensationAmt = getFieldVal("compensationAmt") || 0;
 
-  // E6: 용도지역 면적 합계 — 기준용적률(E7) 계산에만 사용
-  const zoneSum = zones.reduce(function(s,z){ return s + (z.area||0); }, 0);
-  const weightedSum = zones.reduce(function(s,z){ return s + (z.area||0)*((z.farPct||0)/100); }, 0);
-  // E7: 기준용적률 = Σ(면적×배율) / E6  ← 용도지역 합계 기준
-  const baseFAR = zoneSum > 0 ? weightedSum / zoneSum : null;
-  // 대지면적 불일치 플래그
-  const areaMismatch = siteArea > 0 && zoneSum > 0 && Math.abs(siteArea - zoneSum) > 0.1;
+  // ① 기준용적률 = Σ(용도지역 면적 × 용적률) ÷ 용도지역 면적 합계
+  const zoneSum = qA(zones.reduce(function(s,z){ return s + (qA(z.area)||0); }, 0));
+  const weightedSum = zones.reduce(function(s,z){ return s + (qA(z.area)||0)*(z.farPct||0); }, 0); // ㎡·%
+  const basePct = zoneSum > 0 ? qP(weightedSum / zoneSum) : null;
+  const areaMismatch = hasSite && zoneSum > 0 && Math.abs(siteArea - zoneSum) > 0.1;
 
-  // X14: α = (X12-X11) / 대지면적  ← 대지면적 기준
-  const netBurden = infraArea - publicLand;
-  const alpha = siteArea > 0 ? netBurden / siteArea : null;
-  // E11: 완화용적률 계산기준 = E8 × (1 + 1.3 × α)
-  const relaxedBaseFAR = alpha !== null ? targetFAR * (1 + 1.3 * alpha) : null;
-
+  // ② 사업성보정계수: 소수점 셋째자리 올림 후 1.0~1.5 범위 적용
   const hasPrices = seoulPrice !== null && sitePrice !== null && sitePrice > 0;
   const rawRatio = hasPrices ? seoulPrice / sitePrice : null;
-  // 보정계수: 소수점 셋째자리 올림 후 1.0~1.5 범위 적용 (PDF 세부기준)
   const correctionFactor = hasPrices
-    ? Math.min(Math.max(Math.ceil(rawRatio * 100) / 100, 1.0), 1.5)
+    ? Math.min(Math.max(Math.ceil(parseFloat((rawRatio * 100).toPrecision(12))) / 100, 1.0), 1.5)
     : null;
   const isCapped = hasPrices ? rawRatio >= 1.5 : false;
   const isFloored = hasPrices ? rawRatio <= 1.0 : false;
 
-  const baseFARRounded = baseFAR !== null ? Math.round(baseFAR * 10000) / 10000 : null; // 표시용
-  // Q14 = Q11 ÷ (Q12 × 2)
+  // ③ 종상향 증가 용적률 = 기준용적률(상향) − 기준용적률
+  const incPct = (basePct !== null && hasTarget) ? qP(targetPct - basePct) : null;
+  const incArea = (incPct !== null && hasSite) ? qA(qA(siteArea * targetPct / 100) - qA(siteArea * basePct / 100)) : null;
+
+  // ④ 기부형 임대 용적률 = 증가 용적률 × 0.5 ÷ 보정계수
+  const donGrossBeforePct = incPct !== null ? qP(incPct * 0.5) : null;
+  const donGrossAfterPct = (incPct !== null && correctionFactor !== null) ? qP(incPct * 0.5 / correctionFactor) : null;
+
+  // ⑤ 세입자 손실보상 용적률 = 기준용적률 × 0.7 × (환산면적 ÷ 대지면적)
+  //    환산면적 = 손실보상액 ÷ (손실보상 토지환산용 공시지가 × 2)
   const hasCompPrice = compPrice !== null && compPrice > 0;
-  const compLandArea = hasCompPrice ? compensationAmt / (compPrice * 2) : null;
-  // 손실보상에 따른 토지환산비율 = 기준용적률 × (1 + 0.7 × (환산면적 ÷ 대지면적)) − 기준용적률
-  const lossCompRatio = (compLandArea !== null && baseFAR !== null && siteArea > 0)
-    ? baseFAR * (1 + 0.7 * (compLandArea / siteArea)) - baseFAR
-    : null;
-  // Q16 = (기준용적률(상향) − 기준용적률) ÷ 2 − 토지환산비율(Q13)
-  // baseFARRounded: 기준용적률을 소수4자리 반올림 적용 (엑셀 수식과 일치)
-  const lossRelaxRatio = (lossCompRatio !== null && baseFARRounded !== null)
-    ? (targetFAR - baseFARRounded) / 2 - lossCompRatio
-    : null;
-  // S16 = E3 × Q16  ← E3(대지면적) 사용
-  const lossRelaxArea = (lossRelaxRatio !== null && siteArea > 0)
-    ? siteArea * lossRelaxRatio
-    : null;
+  const noComp = compensationAmt === 0;
+  const compLandArea = noComp ? 0 : (hasCompPrice ? qA(compensationAmt / (compPrice * 2)) : null);
+  const compRatio = (compLandArea !== null && hasSite) ? qR(compLandArea / siteArea) : null;
+  const lossPct = noComp ? 0 : ((compRatio !== null && basePct !== null) ? qP(basePct * 0.7 * compRatio) : null);
+  const lossArea = (lossPct !== null && hasSite) ? qA(siteArea * lossPct / 100) : null;
 
-  // 공동이용시설 추가용적 = E14 / E3  ← E3(대지면적) 사용
-  const communityBonusFAR = siteArea > 0 ? communityArea / siteArea : null;
+  // ⑥ 기부형 임대 순용적률(손실보상 차감) · 일반분양 용적률 · 기부채납 의무면적
+  const donNetBeforePct = (donGrossBeforePct !== null && lossPct !== null) ? Math.max(addP(donGrossBeforePct, -lossPct), 0) : null;
+  const donNetAfterPct = (donGrossAfterPct !== null && lossPct !== null) ? Math.max(addP(donGrossAfterPct, -lossPct), 0) : null;
+  const saleBeforePct = donNetBeforePct !== null ? addP(incPct, -donNetBeforePct) : null;
+  const saleAfterPct = donNetAfterPct !== null ? addP(incPct, -donNetAfterPct) : null;
+  const donationAreaBefore = (donNetBeforePct !== null && hasSite) ? qA(siteArea * donNetBeforePct / 100) : null;
+  const donationAreaAfter = (donNetAfterPct !== null && hasSite) ? qA(siteArea * donNetAfterPct / 100) : null;
 
+  // ⑦ 정비기반시설 완화 = 기준용적률(상향) × 1.3 × α,  α = 순부담면적 ÷ 대지면적
+  const netBurden = qA(infraArea - publicLand);
+  const alpha = hasSite ? qR(netBurden / siteArea) : null;
+  const infraPct = (alpha !== null && hasTarget) ? Math.max(qP(targetPct * 1.3 * alpha), 0) : null;
+  const relaxedPct = infraPct !== null ? addP(targetPct, infraPct) : null;
+
+  // ⑧ 매입임대 완화 = 매입형 비율 × 2.5 × 보정계수
   const buyHouseholdsTotal = buyUnits.reduce(function(s,u){ return s + (u.count||0); }, 0);
   const buyPlanTotal = buyUnits.reduce(function(s,u){ return s + (u.planCount||0); }, 0);
   const donationHouseholdsTotal = donationUnits.reduce(function(s,u){ return s + (u.count||0); }, 0);
   const donationPlanTotal = donationUnits.reduce(function(s,u){ return s + (u.planCount||0); }, 0);
   const donationDelta = donationHouseholdsTotal - donationPlanTotal;
-  // 매입형 비율 = 매입형 세대수 ÷ 전체 세대수 (절사 없이 원값 사용 — 용적률 인센티브 산정 기준)
-  const buyRatio = totalHouseholds > 0 ? buyHouseholdsTotal/totalHouseholds : null;
+  const buyRatioPct = totalHouseholds > 0 ? qP(buyHouseholdsTotal / totalHouseholds * 100) : null;
+  const buyBonusBeforePct = buyRatioPct !== null ? qP(buyRatioPct * 2.5) : null;
+  const buyBonusAfterPct = (buyRatioPct !== null && correctionFactor !== null) ? qP(buyRatioPct * 2.5 * correctionFactor) : null;
 
-  const donationAreaCurrentTotal = donationUnits.reduce(function(s,u){
+  // ⑨ 공동이용시설 완화 = 공동이용시설 면적 ÷ 대지면적
+  const communityPct = hasSite ? qP(communityArea / siteArea * 100) : null;
+
+  // ⑩ 상한용적률 = 기준용적률(상향) + 정비기반시설 + 매입임대 + 공동이용시설
+  const farBeforePct = (relaxedPct !== null && buyBonusBeforePct !== null && communityPct !== null)
+    ? addP(relaxedPct, buyBonusBeforePct, communityPct) : null;
+  const farAfterPct = (relaxedPct !== null && buyBonusAfterPct !== null && communityPct !== null)
+    ? addP(relaxedPct, buyBonusAfterPct, communityPct) : null;
+
+  const donationAreaCurrentTotal = qA(donationUnits.reduce(function(s,u){
     var t = getType(u.typeId); return s + (u.count||0)*(t.area||0);
-  }, 0);
-
-  // E10/H10: 기부채납 의무면적 — 음수 방어(손실보상 과다 시)
-  const donationAreaBefore = (baseFAR !== null && lossCompRatio !== null && siteArea > 0)
-    ? Math.max(Math.floor(siteArea * ((targetFAR - baseFAR)/2 - lossCompRatio) * 10000) / 10000, 0)
-    : null;
-  const donationAreaAfter = (baseFAR !== null && lossCompRatio !== null && correctionFactor !== null && siteArea > 0)
-    ? Math.max(Math.floor(siteArea * ((targetFAR - baseFAR)/2/correctionFactor - lossCompRatio) * 10000) / 10000, 0)
-    : null;
-
-  const farBefore = (relaxedBaseFAR !== null && buyRatio !== null && communityBonusFAR !== null)
-    ? Math.floor((relaxedBaseFAR + buyRatio*2.5 + communityBonusFAR) * 10000) / 10000
-    : null;
-  const farAfter = (relaxedBaseFAR !== null && buyRatio !== null && communityBonusFAR !== null && correctionFactor !== null)
-    ? Math.floor((relaxedBaseFAR + buyRatio*2.5*correctionFactor + communityBonusFAR) * 10000) / 10000
-    : null;
+  }, 0));
+  const donationPlanPct = hasSite ? qP(donationAreaCurrentTotal / siteArea * 100) : null;
 
   const isOK = donationAreaAfter !== null ? donationAreaCurrentTotal >= donationAreaAfter : null;
   const generalHouseholdsAfter = totalHouseholds - donationHouseholdsTotal - buyHouseholdsTotal;
@@ -1029,29 +1056,31 @@ function calculate() {
   const saleTypedArea = saleUnitsLinked.reduce(function(s,u){ return s + (u.linkedCount||0)*(u.area||0); }, 0);
   const saleMatch = saleTypedTotal === generalHouseholdsAfter;
 
-  const buyBonusBefore = buyRatio !== null ? buyRatio*2.5*100 : null;
-  const buyBonusAfter = (buyRatio !== null && correctionFactor !== null) ? buyRatio*2.5*correctionFactor*100 : null;
-  const communityBonusPct = communityBonusFAR !== null ? communityBonusFAR*100 : null;
-
   const computedTotal = donationHouseholdsTotal + buyHouseholdsTotal + generalHouseholdsAfter;
   const totalMismatch = totalHouseholds > 0 && computedTotal !== totalHouseholds;
 
   return {
-    landArea: siteArea, zoneSum: zoneSum, areaMismatch: areaMismatch,
-    baseFAR: baseFAR, netBurden: netBurden, alpha: alpha, relaxedBaseFAR: relaxedBaseFAR,
-    hasPrices: hasPrices, hasCompPrice: hasCompPrice, rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped, isFloored: isFloored,
-    compLandArea: compLandArea, lossCompRatio: lossCompRatio, lossRelaxRatio: lossRelaxRatio, lossRelaxArea: lossRelaxArea, communityBonusFAR: communityBonusFAR,
-    buyHouseholdsTotal: buyHouseholdsTotal, donationHouseholdsTotal: donationHouseholdsTotal, buyRatio: buyRatio,
+    siteArea: siteArea, zoneSum: zoneSum, areaMismatch: areaMismatch,
+    targetPct: hasTarget ? targetPct : null, basePct: basePct, incPct: incPct, incArea: incArea,
+    hasPrices: hasPrices, seoulPrice: seoulPrice, sitePrice: sitePrice,
+    rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped, isFloored: isFloored,
+    donGrossBeforePct: donGrossBeforePct, donGrossAfterPct: donGrossAfterPct,
+    compensationAmt: compensationAmt, compPrice: compPrice, hasCompPrice: hasCompPrice, noComp: noComp,
+    compLandArea: compLandArea, compRatio: compRatio, lossPct: lossPct, lossArea: lossArea,
+    donNetBeforePct: donNetBeforePct, donNetAfterPct: donNetAfterPct,
+    saleBeforePct: saleBeforePct, saleAfterPct: saleAfterPct,
+    donationAreaBefore: donationAreaBefore, donationAreaAfter: donationAreaAfter,
+    infraArea: infraArea, publicLand: publicLand, netBurden: netBurden, alpha: alpha,
+    infraPct: infraPct, relaxedPct: relaxedPct,
+    buyRatioPct: buyRatioPct, buyBonusBeforePct: buyBonusBeforePct, buyBonusAfterPct: buyBonusAfterPct,
+    communityArea: communityArea, communityPct: communityPct,
+    farBeforePct: farBeforePct, farAfterPct: farAfterPct,
+    buyHouseholdsTotal: buyHouseholdsTotal, donationHouseholdsTotal: donationHouseholdsTotal,
     buyPlanTotal: buyPlanTotal,
     donationPlanTotal: donationPlanTotal, donationDelta: donationDelta,
-    donationAreaBefore: donationAreaBefore, donationAreaAfter: donationAreaAfter,
-    farBefore: farBefore, farAfter: farAfter,
-    donationAreaCurrentTotal: donationAreaCurrentTotal, isOK: isOK,
+    donationAreaCurrentTotal: donationAreaCurrentTotal, donationPlanPct: donationPlanPct, isOK: isOK,
     generalHouseholdsAfter: generalHouseholdsAfter, totalHouseholds: totalHouseholds,
     generalHouseholdsPlan: generalHouseholdsPlan, generalDelta: generalDelta,
-    targetFARPct: targetFARPct,
-    buyBonusBefore: buyBonusBefore, buyBonusAfter: buyBonusAfter,
-    communityBonusPct: communityBonusPct,
     saleUnitsLinked: saleUnitsLinked, saleTypedTotal: saleTypedTotal, saleTypedArea: saleTypedArea, saleMatch: saleMatch,
     totalMismatch: totalMismatch, computedTotal: computedTotal
   };
@@ -1066,7 +1095,7 @@ document.querySelectorAll(".tab-btn").forEach(function(btn){
   });
 });
 
-function chainStepHTML(n, title, formula, result, sub, highlight, badge, tip) {
+function chainStepHTML(n, title, formula, calcLine, result, sub, highlight, badge, tip) {
   return '' +
     '<li class="chain-step' + (highlight ? ' chain-step-hl' : '') + '">' +
       '<div class="chain-num">' + n + '</div>' +
@@ -1076,69 +1105,207 @@ function chainStepHTML(n, title, formula, result, sub, highlight, badge, tip) {
           (badge ? '<span class="chain-badge">' + badge + '</span>' : '') +
         '</div>' +
         '<p class="chain-formula">' + formula + '</p>' +
+        (calcLine ? '<p class="chain-calc num">' + calcLine + '</p>' : '') +
         '<div class="chain-result num">' + result + '</div>' +
         (sub ? '<p class="chain-sub num">' + sub + '</p>' : '') +
       '</div>' +
     '</li>';
 }
 
+// 값이 모두 있을 때만 산식 대입 문자열을 만든다
+function has() {
+  for (let i = 0; i < arguments.length; i++) if (arguments[i] === null || arguments[i] === undefined) return false;
+  return true;
+}
+function P(v) { return fmtPctVal(v); }
+function A(v) { return fmtArea(v) + "㎡"; }
+function signP(v) { return v === null ? "—" : "+" + fmtPctVal(v); }
+
+// ── 용적률 단계별 구성표: 기준용적률 → +종상향 → +정비기반 → +매입임대 → +공동이용 = 상한 ──
+function renderFarStack(calc) {
+  const el = document.getElementById("farStack");
+  if (!el) return;
+  if (calc.basePct === null || calc.targetPct === null) {
+    el.innerHTML = '<div class="empty-state">용도지역(면적·용적률)과 기준용적률(상향)을 입력하면 용적률 구성 단계가 표시됩니다.</div>';
+    return;
+  }
+  const cf = calc.correctionFactor;
+  const totalA = calc.farAfterPct;
+  const scale = Math.max(totalA || 0, calc.farBeforePct || 0, calc.relaxedPct || 0, calc.targetPct) || 1;
+
+  // 누계 막대(워터폴): 이전 누계에서 증분만큼 이어 그린다
+  function wf(prev, inc, color) {
+    if (prev === null || inc === null) return '';
+    const l = Math.max(prev, 0) / scale * 100, w = Math.max(inc, 0) / scale * 100;
+    return '<div class="wf-track"><div class="wf-prev" style="width:' + l.toFixed(2) + '%;"></div>' +
+      '<div class="wf-seg" style="left:' + l.toFixed(2) + '%;width:' + w.toFixed(2) + '%;background:' + color + ';"></div></div>';
+  }
+
+  const cum1 = calc.basePct;
+  const cum2 = calc.targetPct;
+  const cum3 = calc.relaxedPct;
+  const cum4 = has(cum3, calc.buyBonusAfterPct) ? addP(cum3, calc.buyBonusAfterPct) : null;
+  const cum5 = calc.farAfterPct;
+
+  const rows = [
+    { op:"", name:"기준용적률", cls:"far-row-base",
+      f: "Σ(용도지역 면적 × 용적률) ÷ 면적 합계",
+      b: P(calc.basePct), a: P(calc.basePct), cum: P(cum1), bar: wf(0, cum1, "#2563ab") },
+    { op:"+", name:"종상향 증가 용적률",
+      f: P(calc.targetPct) + " − " + P(calc.basePct),
+      b: signP(calc.incPct), a: signP(calc.incPct), cum: P(cum2), bar: wf(cum1, calc.incPct, "#d97a3f") },
+    { op:"", name:"└ 기부형 임대 (손실보상 차감)", cls:"far-row-sub",
+      f: has(calc.donGrossAfterPct, calc.lossPct) ? (P(calc.incPct) + " × 0.5 ÷ " + (cf !== null ? fmtNum(cf,2) : "CF") + " − " + P(calc.lossPct)) : "보정계수·손실보상 입력 필요",
+      b: P(calc.donNetBeforePct), a: P(calc.donNetAfterPct), cum: "", bar: "" },
+    { op:"", name:"└ 일반분양", cls:"far-row-sub",
+      f: has(calc.donNetAfterPct) ? (P(calc.incPct) + " − " + P(calc.donNetAfterPct)) : "",
+      b: P(calc.saleBeforePct), a: P(calc.saleAfterPct), cum: "", bar: "" },
+    { op:"+", name:"정비기반시설",
+      f: has(calc.alpha) ? (P(calc.targetPct) + " × 1.3 × α(" + fmtNum(calc.alpha,5) + ")") : "대지면적 입력 필요",
+      b: signP(calc.infraPct), a: signP(calc.infraPct), cum: P(cum3), bar: wf(cum2, calc.infraPct, "#4299e1") },
+    { op:"+", name:"매입임대주택",
+      f: has(calc.buyRatioPct) ? (P(calc.buyRatioPct) + " × 2.5 × " + (cf !== null ? fmtNum(cf,2) : "보정계수")) : "세대수 입력 필요",
+      b: signP(calc.buyBonusBeforePct), a: signP(calc.buyBonusAfterPct), cum: P(cum4), bar: wf(cum3, calc.buyBonusAfterPct, "#7c5cbf"), hl:true },
+    { op:"+", name:"공동이용시설",
+      f: has(calc.siteArea) ? (fmtArea(calc.communityArea) + " ÷ " + fmtArea(calc.siteArea)) : "대지면적 입력 필요",
+      b: signP(calc.communityPct), a: signP(calc.communityPct), cum: P(cum5), bar: wf(cum4, calc.communityPct, "#94a3b8") },
+  ];
+
+  const body = rows.map(function(r){
+    return '<tr class="' + (r.cls||'') + (r.hl ? ' far-row-hl' : '') + '">' +
+      '<td class="far-op">' + r.op + '</td>' +
+      '<td class="far-name">' + r.name + '</td>' +
+      '<td class="far-f num">' + r.f + '</td>' +
+      '<td class="num">' + r.b + '</td>' +
+      '<td class="num far-a">' + r.a + '</td>' +
+      '<td class="num far-cum">' + r.cum + '</td>' +
+      '<td class="far-bar">' + r.bar + '</td>' +
+    '</tr>';
+  }).join("");
+  const total =
+    '<tr class="far-total">' +
+      '<td class="far-op">=</td><td class="far-name">상한용적률</td>' +
+      '<td class="far-f">기준용적률(상향) + 정비기반 + 매입임대 + 공동이용</td>' +
+      '<td class="num">' + P(calc.farBeforePct) + '</td>' +
+      '<td class="num far-a">' + P(calc.farAfterPct) + '</td>' +
+      '<td class="num far-cum">' + P(cum5) + '</td><td></td>' +
+    '</tr>';
+
+  let summary = '';
+  if (calc.farAfterPct !== null) {
+    summary =
+      '<div class="far-summary num">' +
+        '<div><b>상한용적률</b> = ' + P(calc.targetPct) + '(기준용적률 상향) + ' + P(calc.infraPct) + '(정비기반시설) + ' +
+          P(calc.buyBonusAfterPct) + '(매입임대) + ' + P(calc.communityPct) + '(공동이용시설) = <b class="far-big">' + P(calc.farAfterPct) + '</b></div>' +
+        '<div class="far-summary-alt">= ' + P(calc.basePct) + '(기준) + ' + P(calc.incPct) + '(임대 ' + P(calc.donNetAfterPct) + ' + 분양 ' + P(calc.saleAfterPct) + ') + ' +
+          P(calc.buyBonusAfterPct) + '(매입임대) + ' + P(addP(calc.infraPct, calc.communityPct)) + '(정비기반 ' + P(calc.infraPct) + ' + 공동이용 ' + P(calc.communityPct) + ')</div>' +
+      '</div>';
+  }
+
+  el.innerHTML =
+    '<div class="far-wrap"><table class="far-table">' +
+      '<thead><tr><th></th><th>구분</th><th>산식</th><th class="num-col">보정 전</th><th class="num-col">보정 후</th><th class="num-col">누계</th><th class="far-bar-h">구성</th></tr></thead>' +
+      '<tbody>' + body + total + '</tbody>' +
+    '</table></div>' + summary;
+}
+
 function renderChain(calc) {
+  const cf = calc.correctionFactor;
+  const zoneCalc = (calc.basePct !== null)
+    ? "[" + zones.filter(function(z){ return (z.area||0) > 0; }).map(function(z){
+        return "(" + fmtArea(qA(z.area)) + "㎡ × " + fmtNum(z.farPct||0, 2) + "%)";
+      }).join(" + ") + "] ÷ " + A(calc.zoneSum) + " = " + P(calc.basePct)
+    : null;
+
   const html = [
     chainStepHTML("1","기준용적률",
-      "용도지역별 (면적 × 기준용적률) 합계 ÷ 용도지역 면적 합계",
-      calc.baseFAR !== null ? fmtPctVal(calc.baseFAR*100) : "—",
-      null, false, null,
+      "Σ(용도지역 면적 × 용도지역 용적률) ÷ 용도지역 면적 합계",
+      zoneCalc,
+      P(calc.basePct),
+      calc.areaMismatch ? "⚠ 용도지역 면적 합계와 대지면적이 다릅니다" : null, false, null,
       "현재 용도지역 구성으로 산정한 면적가중평균 용적률입니다. 종상향 전 출발점이 됩니다."),
-    chainStepHTML("2","정비기반시설 부담률 (α)",
-      "(정비기반시설 설치면적 − 국공유지 면적) ÷ 대지면적",
-      calc.alpha !== null ? fmtPctVal(calc.alpha*100) : "—",
-      calc.netBurden !== null ? "순부담 " + fmtArea(calc.netBurden) + "㎡" : null,
-      false, null,
-      "사업이 순수하게 추가 제공하는 정비기반시설 비율로, 완화용적률 산정에 가산 요인으로 반영됩니다."),
-    chainStepHTML("3","완화용적률 계산기준",
-      "기준용적률(상향) × (1 + 1.3 × α)",
-      calc.relaxedBaseFAR !== null ? fmtPctVal(calc.relaxedBaseFAR*100) : "—",
-      null, false, null,
-      "정비기반시설 제공 비율(α)을 반영해 산정한 완화용적률의 계산 기준값입니다."),
-    chainStepHTML("4","사업성보정계수",
-      "MIN(MAX(⌈서울시 평균공시지가 ÷ 사업지 평균공시지가⌉₀.₀₁, 1.0), 1.5)  — 소수점 셋째자리 올림, 범위 1.0~1.5",
-      calc.correctionFactor !== null ? fmtNum(calc.correctionFactor,2) : "공시지가 입력 필요",
-      calc.rawRatio !== null ? "원시 비율 " + fmtNum(calc.rawRatio,4) + (calc.isCapped ? " → 상한 1.5 적용" : calc.isFloored ? " → 하한 1.0 적용" : " → 올림 적용") : null,
-      true,
+    chainStepHTML("2","사업성보정계수",
+      "서울시 평균 공시지가 ÷ 사업지 평균 공시지가 → 소수점 셋째자리 올림, 1.0~1.5 범위",
+      calc.hasPrices ? (fmtInt(calc.seoulPrice) + " ÷ " + fmtInt(calc.sitePrice) + " = " + fmtNum(calc.rawRatio,4) + "… → " + fmtNum(cf,2)) : null,
+      cf !== null ? fmtNum(cf,2) : "공시지가 입력 필요",
+      null, true,
       calc.isCapped ? "상한 1.5 적용" : (calc.isFloored ? "하한 1.0 적용" : (calc.hasPrices ? "범위 내" : null)),
       "사업지 공시지가가 서울시 평균보다 낮을수록 값이 커집니다. 1.0 미만은 1.0, 1.5 초과는 1.5로 고정되며 소수점 셋째자리에서 올림합니다."),
-    chainStepHTML("5","손실보상 토지환산",
-      "환산면적 = 손실보상액 ÷ (손실보상 토지환산용 공시지가 × 2)  /  토지환산비율 = 기준용적률 × (1 + 0.7 × (환산면적 ÷ 대지면적)) − 기준용적률",
-      calc.compLandArea !== null ? fmtArea(calc.compLandArea) + "㎡" : "손실보상 토지환산용 공시지가 입력 필요",
-      calc.lossCompRatio !== null ? "손실보상에 따른 토지환산비율 " + fmtPctVal(calc.lossCompRatio*100,4) : null,
+    chainStepHTML("3","종상향 증가 용적률",
+      "기준용적률(상향) − 기준용적률",
+      has(calc.incPct) ? (P(calc.targetPct) + " − " + P(calc.basePct) + " = " + P(calc.incPct)) : null,
+      P(calc.incPct),
+      has(calc.incArea) ? "증가면적 " + A(calc.incArea) + " (대지면적 × 상향용적률 − 대지면적 × 기준용적률)" : null,
       false, null,
-      "손실보상액을 토지면적으로 환산합니다. 토지환산비율은 기준용적률(종상향 전)을 기준으로 산정하며, 이 비율만큼 임대주택 의무면적에서 차감됩니다."),
-    chainStepHTML("5-1","세입자 손실보상에 따른 임대주택 완화",
-      "(기준용적률(상향) − 기준용적률) ÷ 2 − 토지환산비율",
-      calc.lossRelaxRatio !== null
-        ? fmtPctVal(calc.lossRelaxRatio*100,4) + (calc.lossRelaxArea !== null ? "  /  " + fmtArea(calc.lossRelaxArea) + "㎡" : "")
-        : "—",
-      calc.lossCompRatio !== null
-        ? "토지환산비율이 기부채납 의무면적 산식에서 차감되어 완화 반영됨"
+      "용도지역 상향으로 늘어나는 용적률입니다. 이 중 절반을 보정계수로 나눈 만큼 기부형 임대주택으로 공급합니다."),
+    chainStepHTML("4","기부형 임대주택 용적률",
+      "증가 용적률 × 0.5 ÷ 사업성보정계수",
+      has(calc.donGrossAfterPct) ? (P(calc.incPct) + " × 0.5 ÷ " + fmtNum(cf,2) + " = " + P(calc.donGrossAfterPct)) : null,
+      P(calc.donGrossAfterPct),
+      has(calc.donGrossBeforePct) ? "보정 전 " + P(calc.incPct) + " × 0.5 = " + P(calc.donGrossBeforePct) : null,
+      false, null,
+      "보정계수가 클수록 기부형 임대주택 용적률이 줄어듭니다."),
+    chainStepHTML("5","세입자 손실보상 용적률",
+      "환산면적 = 손실보상액 ÷ (토지환산용 공시지가 × 2)  /  손실보상 용적률 = 기준용적률 × 0.7 × (환산면적 ÷ 대지면적)",
+      calc.noComp ? "손실보상액 없음 → 0.00%"
+        : (has(calc.lossPct, calc.compRatio)
+          ? fmtInt(calc.compensationAmt) + " ÷ (" + fmtInt(calc.compPrice) + " × 2) = " + A(calc.compLandArea) +
+            "  →  " + P(calc.basePct) + " × 0.7 × (" + fmtArea(calc.compLandArea) + " ÷ " + fmtArea(calc.siteArea) + " = " + fmtNum(calc.compRatio,5) + ") = " + P(calc.lossPct)
+          : null),
+      calc.lossPct !== null ? P(calc.lossPct) : "손실보상 토지환산용 공시지가 입력 필요",
+      has(calc.lossArea) ? "환산 용적률 면적 " + A(calc.lossArea) : null,
+      false, null,
+      "세입자 손실보상액을 토지면적으로 환산한 만큼 기부형 임대주택 용적률에서 차감됩니다."),
+    chainStepHTML("6","기부형 임대 순용적률 · 일반분양 · 의무면적",
+      "임대 = 기부형 임대 용적률 − 손실보상 용적률  /  분양 = 증가 용적률 − 임대  /  의무면적 = 대지면적 × 임대 순용적률",
+      has(calc.donNetAfterPct)
+        ? P(calc.donGrossAfterPct) + " − " + P(calc.lossPct) + " = " + P(calc.donNetAfterPct) +
+          "  /  " + P(calc.incPct) + " − " + P(calc.donNetAfterPct) + " = " + P(calc.saleAfterPct) +
+          "  /  " + fmtArea(calc.siteArea) + " × " + P(calc.donNetAfterPct) + " = " + A(calc.donationAreaAfter)
         : null,
+      has(calc.donationAreaAfter) ? "임대 " + P(calc.donNetAfterPct) + " · 분양 " + P(calc.saleAfterPct) + " · 의무면적 " + A(calc.donationAreaAfter) : "—",
+      has(calc.donationAreaBefore) ? "보정 전: 임대 " + P(calc.donNetBeforePct) + " · 분양 " + P(calc.saleBeforePct) + " · 의무면적 " + A(calc.donationAreaBefore) +
+        (has(calc.donationPlanPct) ? "  |  계획 " + A(calc.donationAreaCurrentTotal) + " (" + P(calc.donationPlanPct) + ")" : "") : null,
+      true, calc.isOK === null ? null : (calc.isOK ? "의무면적 충족" : "의무면적 미달"),
+      "기부채납 임대주택 타입별 합산 면적이 의무면적 이상이어야 합니다."),
+    chainStepHTML("7","정비기반시설 완화 용적률",
+      "기준용적률(상향) × 1.3 × α   [α = (정비기반시설 설치면적 − 국공유지 면적) ÷ 대지면적]",
+      has(calc.infraPct)
+        ? "α = (" + fmtArea(calc.infraArea) + " − " + fmtArea(calc.publicLand) + " = " + fmtArea(calc.netBurden) + ") ÷ " + fmtArea(calc.siteArea) + " = " + fmtNum(calc.alpha,5) +
+          "  →  " + P(calc.targetPct) + " × (1 + 1.3 × " + fmtNum(calc.alpha,5) + ") = " + P(calc.relaxedPct)
+        : null,
+      signP(calc.infraPct),
+      has(calc.relaxedPct) ? "누계 " + P(calc.relaxedPct) : null,
       false, null,
-      "세입자 손실보상액을 토지면적으로 환산한 비율만큼 임대주택 의무면적이 줄어듭니다. 이 완화분은 기부채납 임대주택 면적 산식에 차감항으로 반영됩니다."),
-    chainStepHTML("6","기부채납 임대주택 의무면적",
-      "대지면적 × ((기준용적률(상향) − 기준용적률) ÷ 2 ÷ 보정계수 − 토지환산비율)",
-      calc.donationAreaAfter !== null ? fmtArea(calc.donationAreaAfter) + "㎡" : "—",
-      calc.donationAreaBefore !== null ? "보정 전 " + fmtArea(calc.donationAreaBefore) + "㎡ → 보정 후 " + (calc.donationAreaAfter !== null ? fmtArea(calc.donationAreaAfter) + "㎡" : "—") : null,
+      "사업이 순수하게 추가 제공하는 정비기반시설(순부담) 비율만큼 용적률이 완화됩니다."),
+    chainStepHTML("8","매입임대주택 완화 용적률",
+      "매입형 비율(매입형 세대수 ÷ 전체 세대수) × 2.5 × 사업성보정계수",
+      has(calc.buyBonusAfterPct)
+        ? fmtInt(calc.buyHouseholdsTotal) + " ÷ " + fmtInt(calc.totalHouseholds) + " = " + P(calc.buyRatioPct) +
+          "  →  " + P(calc.buyRatioPct) + " × 2.5 × " + fmtNum(cf,2) + " = " + P(calc.buyBonusAfterPct)
+        : null,
+      signP(calc.buyBonusAfterPct),
+      has(calc.buyBonusBeforePct) ? "보정 전 " + P(calc.buyRatioPct) + " × 2.5 = " + P(calc.buyBonusBeforePct) : null,
       true, null,
-      "기부채납 임대주택 타입별 합산 면적이 이 값 이상이어야 합니다. 보정계수가 클수록 의무면적이 줄어들어 분양세대 확보가 유리해집니다."),
-    chainStepHTML("7","용적률 산정 (적용 전 → 후)",
-      "전: 완화용적률 계산기준 + 매입형비율 × 2.5 + 공동이용시설 추가용적  /  후: 완화용적률 계산기준 + 매입형비율 × 2.5 × 보정계수 + 공동이용시설 추가용적",
-      (calc.farBefore !== null && calc.farAfter !== null)
-        ? fmtPctVal(calc.farBefore*100) + " → " + fmtPctVal(calc.farAfter*100) : "—",
-      (calc.farBefore !== null && calc.farAfter !== null)
-        ? "증감 ▲" + fmtNum((calc.farAfter-calc.farBefore)*100,2) + "%p  (보정계수 " + fmtNum(calc.correctionFactor,4) + "이 매입형 인센티브에 반영)" : null,
+      "보정계수가 매입임대 완화 용적률에 곱해집니다."),
+    chainStepHTML("9","공동이용시설 완화 용적률",
+      "공동이용시설 설치면적 ÷ 대지면적",
+      has(calc.communityPct) ? fmtArea(calc.communityArea) + " ÷ " + fmtArea(calc.siteArea) + " = " + P(calc.communityPct) : null,
+      signP(calc.communityPct),
+      null, false, null,
+      "작은도서관 등 공동이용시설 설치 면적만큼 용적률이 완화됩니다."),
+    chainStepHTML("10","상한용적률",
+      "기준용적률(상향) + 정비기반시설 + 매입임대 + 공동이용시설",
+      has(calc.farAfterPct)
+        ? P(calc.targetPct) + " + " + P(calc.infraPct) + " + " + P(calc.buyBonusAfterPct) + " + " + P(calc.communityPct) + " = " + P(calc.farAfterPct)
+        : null,
+      has(calc.farBeforePct, calc.farAfterPct) ? P(calc.farBeforePct) + " → " + P(calc.farAfterPct) : "—",
+      has(calc.farBeforePct, calc.farAfterPct) ? "보정 전 → 후 ▲" + fmtNum(addP(calc.farAfterPct, -calc.farBeforePct),2) + "%p (보정계수가 매입임대 완화에 반영)" : null,
       true, null,
-      "보정계수 적용 전은 매입형비율×2.5, 적용 후는 매입형비율×2.5×보정계수로 산정합니다. 보정계수가 1 이상이면 적용 후 용적률이 높아져 사업성이 개선됩니다.")
+      "보정계수 적용 전은 매입형 비율 × 2.5, 적용 후는 × 2.5 × 보정계수로 산정합니다.")
   ];
   document.getElementById("chainList").innerHTML = html.join("");
+  renderFarStack(calc);
 }
 
 function renderCFLive(calc) {
@@ -1181,26 +1348,29 @@ function renderKPI(calc) {
     { label:"보정계수", value: calc.correctionFactor !== null ? fmtNum(calc.correctionFactor,2) : "—",
       flag: calc.isCapped ? "상한 1.5" : (calc.isFloored ? "하한 1.0" : null), cls:"",
       tip:"소수점 셋째자리 올림 후 1.0~1.5 범위 적용. 사업지 공시지가가 낮을수록 값이 커집니다." },
-    { label:"용적률 (전 → 후)", value: (calc.farBefore !== null && calc.farAfter !== null)
-        ? fmtPctVal(calc.farBefore*100) + " → " + fmtPctVal(calc.farAfter*100) : "—", cls:"",
-      tip:"보정계수 적용 전·후 산정 용적률입니다." },
-    { label:"용적률 증감", value: (calc.farBefore !== null && calc.farAfter !== null)
-        ? "▲ " + fmtNum((calc.farAfter-calc.farBefore)*100,2) + "%p" : "—", cls:"",
-      tip:"보정계수가 매입형 인센티브에 반영되어 늘어나는 용적률 증분입니다." },
-    { label:"기준용적률", value: calc.baseFAR !== null ? fmtPctVal(calc.baseFAR*100) : "—", cls:"",
-      tip:"용도지역별 면적 가중평균으로 산정한 종상향 전 기준용적률입니다." },
-    { label:"완화용적률 계산기준", value: calc.relaxedBaseFAR !== null ? fmtPctVal(calc.relaxedBaseFAR*100) : "—", cls:"",
-      tip:"기준용적률(상향) × (1 + 1.3 × α). 정비기반시설 제공 비율이 반영된 완화 기준값입니다." },
-    { label:"α 정비기반시설 부담률", value: calc.alpha !== null ? fmtPctVal(calc.alpha*100) : "—", cls:"",
-      tip:"(정비기반시설 설치면적 − 국공유지 면적) ÷ 대지면적" },
-    { label:"손실보상 토지환산비율", value: calc.lossCompRatio !== null ? fmtPctVal(calc.lossCompRatio*100,4) : "—", cls:"",
-      tip:"기준용적률 × (1 + 0.7 × 환산면적÷대지면적) − 기준용적률" },
-    { label:"세입자 완화비율", value: calc.lossRelaxRatio !== null ? fmtPctVal(calc.lossRelaxRatio*100,4) : "—", cls:"",
-      tip:"(기준용적률(상향) − 기준용적률) ÷ 2 − 토지환산비율. 임대주택 의무에서 차감되는 완화분입니다." },
-    { label:"기부채납 의무면적 (보정 전)", value: calc.donationAreaBefore !== null ? fmtArea(calc.donationAreaBefore) + "㎡" : "—", cls:"",
-      tip:"보정계수 미적용 시 기부채납 임대주택 최소 의무면적입니다." },
+    { label:"상한용적률 (전 → 후)", value: (calc.farBeforePct !== null && calc.farAfterPct !== null)
+        ? fmtPctVal(calc.farBeforePct) + " → " + fmtPctVal(calc.farAfterPct) : "—", cls:"kpi-accent",
+      tip:"기준용적률(상향) + 정비기반시설 + 매입임대 + 공동이용시설" },
+    { label:"용적률 증감", value: (calc.farBeforePct !== null && calc.farAfterPct !== null)
+        ? "▲ " + fmtNum(addP(calc.farAfterPct, -calc.farBeforePct),2) + "%p" : "—", cls:"",
+      tip:"보정계수가 매입임대 완화에 반영되어 늘어나는 용적률 증분입니다." },
+    { label:"기준용적률 → 상향", value: (calc.basePct !== null && calc.targetPct !== null)
+        ? fmtPctVal(calc.basePct) + " → " + fmtPctVal(calc.targetPct) : "—", cls:"",
+      tip:"용도지역별 면적 가중평균 기준용적률과 종상향 후 기준용적률(상향)입니다." },
+    { label:"정비기반시설 (α)", value: calc.infraPct !== null ? "+" + fmtPctVal(calc.infraPct) + "  (α " + fmtNum(calc.alpha,5) + ")" : "—", cls:"",
+      tip:"기준용적률(상향) × 1.3 × α, α = 순부담면적 ÷ 대지면적" },
+    { label:"매입임대 (전 → 후)", value: (calc.buyBonusBeforePct !== null && calc.buyBonusAfterPct !== null)
+        ? "+" + fmtPctVal(calc.buyBonusBeforePct) + " → +" + fmtPctVal(calc.buyBonusAfterPct) : "—", cls:"",
+      tip:"매입형 비율 × 2.5 (× 보정계수)" },
+    { label:"공동이용시설", value: calc.communityPct !== null ? "+" + fmtPctVal(calc.communityPct) : "—", cls:"",
+      tip:"공동이용시설 설치면적 ÷ 대지면적" },
+    { label:"세입자 손실보상 용적률", value: calc.lossPct !== null ? fmtPctVal(calc.lossPct) : "—", cls:"",
+      tip:"기준용적률 × 0.7 × (환산면적 ÷ 대지면적). 기부형 임대 용적률에서 차감됩니다." },
+    { label:"기부형 임대 순용적률 (전 → 후)", value: (calc.donNetBeforePct !== null && calc.donNetAfterPct !== null)
+        ? fmtPctVal(calc.donNetBeforePct) + " → " + fmtPctVal(calc.donNetAfterPct) : "—", cls:"",
+      tip:"증가 용적률 × 0.5 (÷ 보정계수) − 손실보상 용적률" },
     { label:"기부채납 의무면적 (보정 후)", value: calc.donationAreaAfter !== null ? fmtArea(calc.donationAreaAfter) + "㎡" : "—", cls:"",
-      tip:"보정계수 적용 후 기부채납 임대주택 최소 의무면적입니다. 타입별 합산 면적이 이 값 이상이어야 합니다." },
+      tip:"대지면적 × 기부형 임대 순용적률. 타입별 합산 면적이 이 값 이상이어야 합니다." },
     { label:"임대(기부형) 세대 증감", value: deltaText + "  (" + fmtInt(calc.donationPlanTotal) + " → " + fmtInt(calc.donationHouseholdsTotal) + ")", cls: deltaCls,
       tip:"계획(원안) 대비 현재 기부형 임대 세대수의 변화입니다." },
     { label:"현재 배분 상태", value: calc.isOK === null ? "—" : (calc.isOK ? "OK" : "미달"),
@@ -1220,9 +1390,9 @@ function renderKPI(calc) {
 function renderZoneTable() {
   const rows = zones.map(function(z){
     return '<tr data-id="' + z.id + '">' +
-      '<td><input type="text" class="cell-input w-name" data-field="name" data-id="' + z.id + '" value="' + (z.name||"") + '" /></td>' +
-      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="area" data-id="' + z.id + '" data-kind="area" value="' + liveFormat(z.area) + '" /></td>' +
-      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="farPct" data-id="' + z.id + '" value="' + liveFormat(z.farPct) + '" /></td>' +
+      '<td><input type="text" class="cell-input w-name" data-field="name" data-id="' + z.id + '" value="' + (z.name||"") + '" placeholder="예: 제1종일반주거" /></td>' +
+      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="area" data-id="' + z.id + '" data-kind="area" value="' + (z.area === null || z.area === undefined ? "" : liveFormat(qA(z.area).toFixed(4))) + '" placeholder="0.0000" /></td>' +
+      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="farPct" data-id="' + z.id + '" value="' + liveFormat(z.farPct) + '" placeholder="예: 150" /></td>' +
       '<td class="del-col"><button class="btn-del" data-id="' + z.id + '" title="삭제">×</button></td>' +
       '</tr>';
   }).join("");
@@ -1276,7 +1446,7 @@ function attachZoneListeners() {
 }
 
 function addZone() {
-  zones.push({ id: nextId(), name: "용도지역", area: 0, farPct: 100 });
+  zones.push({ id: nextId(), name: "", area: null, farPct: null });
   renderAll();
 }
 
@@ -1334,8 +1504,8 @@ function saleRowHTML(u, editable) {
   const deltaHTML = deltaBadge(u.linkedCount, u.baseCount);
   if (editable) {
     return '<tr data-id="' + u.id + '">' +
-      '<td><input type="text" class="cell-input w-name" data-field="name" data-id="' + u.id + '" value="' + (u.name||"") + '" /></td>' +
-      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="area" data-id="' + u.id + '" data-kind="area" value="' + liveFormat(u.area) + '" /></td>' +
+      '<td><input type="text" class="cell-input w-name" data-field="name" data-id="' + u.id + '" value="' + (u.name||"") + '" placeholder="예: 59A" /></td>' +
+      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="area" data-id="' + u.id + '" data-kind="area" value="' + (u.area === null || u.area === undefined ? "" : liveFormat(qA(u.area).toFixed(4))) + '" placeholder="0.0000" /></td>' +
       '<td><input type="text" inputmode="numeric" class="cell-input w-count" data-field="baseCount" data-id="' + u.id + '" value="' + liveFormat(u.baseCount) + '" /></td>' +
       '<td class="num linked-cell">' + fmtInt(u.linkedCount) + '</td>' +
       '<td class="num delta-cell">' + deltaHTML + '</td>' +
@@ -1438,75 +1608,51 @@ function attachUnitListeners(units, bodyId, onDelete) {
 
 function addDonationType() {
   var firstType = saleUnits[0];
+  if (!firstType) { alert("일반분양 타입(타입명·공급면적)을 먼저 추가하세요."); return; }
   donationUnits.push({ id: nextId(), typeId: firstType ? firstType.id : "", planCount: 0, count: 0 });
   autoApplied = false;
   renderAll();
 }
 function addBuyType() {
   var firstType = saleUnits[0];
+  if (!firstType) { alert("일반분양 타입(타입명·공급면적)을 먼저 추가하세요."); return; }
   buyUnits.push({ id: nextId(), typeId: firstType ? firstType.id : "", planCount: 0, count: 0 });
   renderAll();
 }
 function addSaleType() {
-  saleUnits.push({ id: nextId(), name: "신규", area: 0, baseCount: 0 });
+  saleUnits.push({ id: nextId(), name: "", area: null, baseCount: 0 });
   renderAll();
 }
 
 function renderOverview(calc) {
   const container = document.getElementById("overviewContent");
 
-  if (calc.farBefore === null || calc.farAfter === null) {
-    container.innerHTML = '<div class="empty-state">공시지가를 입력하면 용적률 구성 비교가 표시됩니다.</div>';
+  if (calc.farBeforePct === null || calc.farAfterPct === null) {
+    container.innerHTML = '<div class="empty-state">입력 탭의 값을 모두 입력하면 용적률 구성 비교가 표시됩니다.</div>';
     return;
   }
 
-  const MAX = Math.max(calc.farAfter*100, calc.farBefore*100) * 1.06;
+  const MAX = Math.max(calc.farAfterPct, calc.farBeforePct) * 1.06;
   const BAR_H = 300;
-
-  const baseFARPct   = calc.baseFAR*100;
-  const targetFARPct = calc.targetFARPct;          // 250%
-  const lossPct      = calc.lossCompRatio !== null ? calc.lossCompRatio*100 : 0;
-  const halfGap      = (targetFARPct - baseFARPct) / 2;
-
-  // ── 엑셀 E9 = E11 + E12×2.5 + E13 구조 그대로 ──────────────────
-  // E11 = E8×(1+1.3×α) = 기준(상향) + 정비기반시설 완화
-  //      = 기준 + b_infra
-  // b_infra = E8×1.3×α (정비기반시설 제공으로 증가된 용적률)
-  const relaxedPct   = calc.relaxedBaseFAR !== null ? calc.relaxedBaseFAR*100 : 0; // E11
-  const b_infra      = relaxedPct - targetFARPct;    // E11 - E8 = 정비기반시설 완화분
-  const communityPct = calc.communityBonusPct || 0;  // c = E13×100
-
-  // 보정 전 (E9): E11 + buyBonusBefore + communityPct
-  const buyBonusBefore = calc.buyBonusBefore || 0;
-  // 기부(전): (E8-E7)/2 - Q13 → 250%~기준 사이 절반 중 손실보상 차감
-  // 기부(전): (E8-E7)/2 - Q13
-  const donateBeforePct = halfGap - lossPct;
-  // 분양(전): 250%~기준 구간 중 기부 제외
-  const saleBeforePct   = targetFARPct - baseFARPct - donateBeforePct;
-
-  // 보정 후 (H9): E11 + buyBonusAfter + communityPct
-  const buyBonusAfter  = calc.buyBonusAfter || 0;
-  const donateAfterPct = halfGap / (calc.correctionFactor||1) - lossPct;
-  // 분양(후): 250%~기준 구간 중 기부(후) 제외
-  const saleAfterPct   = targetFARPct - baseFARPct - donateAfterPct;
+  const targetFARPct = calc.targetPct;
 
   // 세그먼트: 아래→위 순서 (column-reverse이므로 배열 순서가 바닥→꼭대기)
-  // 구조: [기준용적률(a)] [정비기반시설(b)] [기부채납(임대)] [분양] [매입형보너스] [공동이용(c)]
+  // 구조: [기준용적률] [임대(기부)] [분양] = 기준용적률(상향) → [정비기반] [매입임대] [공동이용]
   const segBefore = [
-    { label:"기준(a)",      val: baseFARPct,      color:"#2563ab" },
-    { label:"정비기반(b)",  val: b_infra,          color:"#4299e1" },
-    { label:"임대(기부)",   val: donateBeforePct,  color:"#d97a3f" },
-    { label:"분양",         val: saleBeforePct,    color:"#1f8f63" },
-    { label:"매입형 인센티브", val: buyBonusBefore, color:"#7c5cbf" },
-    { label:"공동이용(c)",  val: communityPct,     color:"#94a3b8" },
+    { label:"기준",         val: calc.basePct,           color:"#2563ab" },
+    { label:"임대(기부)",   val: calc.donNetBeforePct,   color:"#d97a3f" },
+    { label:"분양",         val: calc.saleBeforePct,     color:"#1f8f63" },
+    { label:"정비기반",     val: calc.infraPct,          color:"#4299e1" },
+    { label:"매입임대",     val: calc.buyBonusBeforePct, color:"#7c5cbf" },
+    { label:"공동이용",     val: calc.communityPct,      color:"#94a3b8" },
   ];
   const segAfter = [
-    { label:"기준(a)",      val: baseFARPct,      color:"#2563ab" },
-    { label:"정비기반(b)",  val: b_infra,          color:"#4299e1" },
-    { label:"임대(기부)",   val: donateAfterPct,   color:"#d97a3f" },
-    { label:"분양",         val: saleAfterPct,     color:"#1f8f63" },
-    { label:"매입형 인센티브", val: buyBonusAfter,  color:"#7c5cbf" },
-    { label:"공동이용(c)",  val: communityPct,     color:"#94a3b8" },
+    { label:"기준",         val: calc.basePct,           color:"#2563ab" },
+    { label:"임대(기부)",   val: calc.donNetAfterPct,    color:"#d97a3f" },
+    { label:"분양",         val: calc.saleAfterPct,      color:"#1f8f63" },
+    { label:"정비기반",     val: calc.infraPct,          color:"#4299e1" },
+    { label:"매입임대",     val: calc.buyBonusAfterPct,  color:"#7c5cbf" },
+    { label:"공동이용",     val: calc.communityPct,      color:"#94a3b8" },
   ];
 
   // 250% 기준용적률(상향) 라인 y위치 계산
@@ -1528,18 +1674,18 @@ function renderOverview(calc) {
   }
 
   const legendSegs = [
-    { label:"기준(a)",         color:"#2563ab" },
-    { label:"정비기반시설(b)", color:"#4299e1" },
+    { label:"기준용적률",      color:"#2563ab" },
     { label:"임대(기부형)",    color:"#d97a3f" },
     { label:"분양",            color:"#1f8f63" },
-    { label:"매입형 인센티브", color:"#7c5cbf" },
-    { label:"공동이용(c)",     color:"#94a3b8" },
+    { label:"정비기반시설",    color:"#4299e1" },
+    { label:"매입임대",        color:"#7c5cbf" },
+    { label:"공동이용시설",    color:"#94a3b8" },
   ];
   const legend = legendSegs.map(function(s){
     return '<div class="legend-item"><span class="legend-swatch" style="background:' + s.color + ';"></span>' + s.label + '</div>';
   }).join("") + '<div class="legend-item"><span style="display:inline-block;width:.8rem;border-top:2px dashed #e53e3e;vertical-align:middle;margin-right:.4rem;"></span>종상향 상한(' + targetFARPct + '%)</div>';
 
-  const farDeltaPct = (calc.farAfter - calc.farBefore) * 100;
+  const farDeltaPct = addP(calc.farAfterPct, -calc.farBeforePct);
   const donHouseholds = calc.donationHouseholdsTotal;
   const donPlan = calc.donationPlanTotal;
   const buyHouseholds = calc.buyHouseholdsTotal;
@@ -1562,7 +1708,7 @@ function renderOverview(calc) {
       '<div class="ov-strip-div"></div>' +
       '<div class="ov-strip-item">' +
         '<span class="ov-strip-label">총 용적률</span>' +
-        '<span class="ov-strip-value num">' + fmtPctVal(calc.farBefore*100,2) + ' → ' + fmtPctVal(calc.farAfter*100,2) + '</span>' +
+        '<span class="ov-strip-value num">' + fmtPctVal(calc.farBeforePct) + ' → ' + fmtPctVal(calc.farAfterPct) + '</span>' +
         '<span class="ov-strip-tag ov-tag-up num">▲' + fmtNum(farDeltaPct,2) + '%p</span>' +
       '</div>' +
       '<div class="ov-strip-div"></div>' +
@@ -1591,7 +1737,7 @@ function renderOverview(calc) {
       '<div class="legend">' + legend + '</div>' +
       '<div class="ov-bars">' +
         '<div class="ov-bar-col">' +
-          '<div class="ov-bar-total num">' + fmtPctVal(calc.farBefore*100,2) + '</div>' +
+          '<div class="ov-bar-total num">' + fmtPctVal(calc.farBeforePct) + '</div>' +
           buildBar(segBefore) +
           '<div class="ov-bar-label">적용 전</div>' +
         '</div>' +
@@ -1600,7 +1746,7 @@ function renderOverview(calc) {
           '<div class="ov-arrow-val num">▲' + fmtNum(farDeltaPct,2) + '%p</div>' +
         '</div>' +
         '<div class="ov-bar-col">' +
-          '<div class="ov-bar-total num">' + fmtPctVal(calc.farAfter*100,2) + '</div>' +
+          '<div class="ov-bar-total num">' + fmtPctVal(calc.farAfterPct) + '</div>' +
           buildBar(segAfter) +
           '<div class="ov-bar-label">적용 후</div>' +
         '</div>' +
@@ -1643,7 +1789,7 @@ function renderOverview(calc) {
   const conclusionHTML =
     '<div class="ov-conclusion">' +
       '<b>결론</b> · 보정계수 <b class="num">' + (calc.correctionFactor!==null?fmtNum(calc.correctionFactor,2):'—') + '</b> 적용 →' +
-      ' 총 용적률 <span class="hl-blue num">' + fmtPctVal(calc.farBefore*100,2) + ' → ' + fmtPctVal(calc.farAfter*100,2) + '</span>' +
+      ' 총 용적률 <span class="hl-blue num">' + fmtPctVal(calc.farBeforePct) + ' → ' + fmtPctVal(calc.farAfterPct) + '</span>' +
       ' (<span class="hl-blue num">▲' + fmtNum(farDeltaPct,2) + '%p</span>) &nbsp;/&nbsp; ' +
       '임대(기부형) <span class="hl-red num">' + fmtInt(donPlan) + ' → ' + fmtInt(donHouseholds) + '세대 (' + (donDelta<0?'▼':'▲') + Math.abs(donDelta) + ')</span> · ' +
       '임대(매입형) <span class="hl-green num">' + fmtInt(buyPlan) + ' → ' + fmtInt(buyHouseholds) + '세대 (' + (buyDelta===0?'동일':((buyDelta<0?'▼':'▲')+Math.abs(buyDelta))) + ')</span>' +
@@ -1724,7 +1870,7 @@ function renderAll(skipFocusedTables) {
   bFooter.innerHTML =
     '<div class="footer-row">' +
     '<span class="num">계획 ' + fmtInt(calc.buyPlanTotal) + '세대 → 적용 ' + fmtInt(calc.buyHouseholdsTotal) + '세대 ' + deltaBadge(calc.buyHouseholdsTotal, calc.buyPlanTotal) + '</span>' +
-    '<span class="footer-status num">매입형 비율 ' + (calc.buyRatio !== null ? fmtPctVal(calc.buyRatio*100) : '—') + '</span>' +
+    '<span class="footer-status num">매입형 비율 ' + (calc.buyRatioPct !== null ? fmtPctVal(calc.buyRatioPct) : '—') + '</span>' +
     '</div>' +
     '<div class="footer-sale-impact num">' + buySaleImpact + '</div>';
   document.getElementById("resultBuyFooter").innerHTML = bFooter.innerHTML;
@@ -1747,9 +1893,9 @@ function renderAll(skipFocusedTables) {
   // ── 기준용적률 > 기준용적률(상향) 역전 경고 ──
   var farInvertEl = document.getElementById("farInvertWarn");
   if (farInvertEl) {
-    if (calc.baseFAR !== null && calc.baseFAR > (calc.targetFARPct/100)) {
+    if (calc.basePct !== null && calc.targetPct !== null && calc.basePct > calc.targetPct) {
       farInvertEl.style.display = "block";
-      farInvertEl.textContent = "⚠ 기준용적률(" + fmtPctVal(calc.baseFAR*100) + ")이 기준용적률(상향)(" + fmtPctVal(calc.targetFARPct) + ")보다 높습니다. 용도지역 설정 또는 종상향 목표를 확인하세요.";
+      farInvertEl.textContent = "⚠ 기준용적률(" + fmtPctVal(calc.basePct) + ")이 기준용적률(상향)(" + fmtPctVal(calc.targetPct) + ")보다 높습니다. 용도지역 설정 또는 종상향 목표를 확인하세요.";
     } else {
       farInvertEl.style.display = "none";
     }
@@ -1841,7 +1987,8 @@ function updateSaleSubtotalCells(unitsLinked, bodyId) {
 }
 
 function resetDonationUnits() {
-  donationUnits = DEFAULT_DONATION_UNITS.map(function(u){ return Object.assign({}, u); });
+  // 보정 적용 세대수를 계획(원안)으로 되돌림
+  donationUnits.forEach(function(u){ u.count = u.planCount || 0; });
   autoApplied = false;
   renderAll();
 }
@@ -2026,6 +2173,25 @@ document.querySelectorAll(".ptype-btn").forEach(function(btn){
 
 document.getElementById("seoulPriceYear").addEventListener("change", applySeoulPriceFromYear);
 
+// ─── 새로 작성: 모든 입력값 초기화 ────────────────────────────────────────────
+function resetAll() {
+  if (!confirm("모든 입력값을 지우고 새로 작성할까요? (저장하지 않은 내용은 사라집니다)")) return;
+  SIMPLE_FIELD_IDS.forEach(function(id){ document.getElementById(id).value = ""; });
+  document.getElementById("seoulPriceYear").value = "custom";
+  projectType = "redev";
+  document.querySelectorAll(".ptype-btn").forEach(function(b){
+    b.classList.toggle("active", b.getAttribute("data-ptype") === projectType);
+  });
+  zones = [ { id: nextId(), name: "", area: null, farPct: null } ];
+  saleUnits = []; donationUnits = []; buyUnits = [];
+  autoApplied = false;
+  try { localStorage.removeItem(LS_KEY); } catch(e) { /* 무시 */ }
+  document.getElementById("projectBadge").style.display = "none";
+  updateSeoulPriceSourceNote();
+  renderAll();
+}
+document.getElementById("resetAllBtn").addEventListener("click", resetAll);
+
 // 사용자가 공시지가를 직접 수정하면 연도 선택을 '직접입력'으로 전환
 document.getElementById("seoulPrice").addEventListener("input", function(){
   const yearSel = document.getElementById("seoulPriceYear");
@@ -2035,9 +2201,6 @@ document.getElementById("seoulPrice").addEventListener("input", function(){
   }
 });
 
-Object.keys(SIMPLE_DEFAULTS).forEach(function(id){
-  document.getElementById(id).value = liveFormat(SIMPLE_DEFAULTS[id]);
-});
 
 // ─── JSON 저장 / 불러오기 ──────────────────────────────────────────────────────
 
@@ -2202,7 +2365,7 @@ function _tryLoadLocalStorage() {
       var state = JSON.parse(raw);
       applyState(state);
     }
-    // raw 없으면 3순위: 기본 내장 데이터 (SIMPLE_DEFAULTS 이미 적용됨)
+    // raw 없으면 빈 입력 상태로 시작
   } catch(e) { /* localStorage 파싱 실패 시 기본값 유지 */ }
 }
 </script>
