@@ -637,7 +637,7 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
               <span class="nf-label tip" data-tip="선택한 사업유형·연도 기준 서울시 평균 공시지가입니다. 연도를 바꾸면 자동으로 채워지며, '직접입력'을 선택하면 수동으로 수정할 수 있습니다.">서울시 평균 공시지가</span>
               <div class="nf-price-row">
                 <div class="nf-input-wrap nf-accent nf-price-main">
-                  <input type="text" inputmode="decimal" id="seoulPrice" placeholder="예: 6,302,982" />
+                  <input type="text" inputmode="decimal" id="seoulPrice" />
                   <span class="nf-suffix">원/㎡</span>
                 </div>
                 <select id="seoulPriceYear" class="nf-year-select" title="공시지가 기준연도">
@@ -652,7 +652,7 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
             <label class="nf">
               <span class="nf-label tip" data-tip="사업시행구역 내 모든 용도지역 대지(지목)의 면적 가중평균 공시지가입니다.">사업지 평균 공시지가</span>
               <div class="nf-input-wrap nf-accent">
-                <input type="text" inputmode="decimal" id="sitePrice" placeholder="예: 4,577,100" />
+                <input type="text" inputmode="decimal" id="sitePrice" />
                 <span class="nf-suffix">원/㎡</span>
               </div>
               <span class="nf-hint">면적 가중평균 기준 · 보정계수(K3) 산정 전용</span>
@@ -669,7 +669,7 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
           <div class="field-row" style="margin-bottom:.9rem;">
             <label class="nf">
               <span class="nf-label">대지면적<span class="tip-icon" data-tip="사업시행구역 전체 대지면적(㎡)입니다. 기준용적률 산정을 제외한 모든 면적 계산(α, 기부채납 의무면적, 손실보상 환산 등)에 사용됩니다.">?</span></span>
-              <div class="nf-input-wrap nf-accent"><input type="text" inputmode="decimal" id="siteArea" placeholder="예: 16,748.29" /><span class="nf-suffix">㎡</span></div>
+              <div class="nf-input-wrap nf-accent"><input type="text" inputmode="decimal" id="siteArea" /><span class="nf-suffix">㎡</span></div>
               <span class="nf-hint" id="siteAreaHint"></span>
             </label>
             <div></div>
@@ -693,11 +693,11 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
           <div class="field-row">
             <label class="nf">
               <span class="nf-label">기준용적률(종상향 목표)<span class="tip-icon" data-tip="용도지역 종상향을 통해 받을 수 있는 최대 허용 용적률입니다. 통상 250%가 적용됩니다.">?</span></span>
-              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="targetFAR" placeholder="예: 250" /><span class="nf-suffix">%</span></div>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="targetFAR" /><span class="nf-suffix">%</span></div>
             </label>
             <label class="nf">
               <span class="nf-label">계획 세대수(전체)<span class="tip-icon" data-tip="기부형·매입형 임대주택과 일반분양을 포함한 사업 전체 계획 세대수입니다. 아래 세대수 입력 합계와 일치해야 합니다.">?</span></span>
-              <div class="nf-input-wrap"><input type="text" inputmode="numeric" id="totalHouseholds" placeholder="예: 556" /><span class="nf-suffix">세대</span></div>
+              <div class="nf-input-wrap"><input type="text" inputmode="numeric" id="totalHouseholds" /><span class="nf-suffix">세대</span></div>
             </label>
           </div>
           <div id="totalMismatchWarn" style="display:none;margin-top:.5rem;padding:.5rem .75rem;background:var(--warn-soft);color:var(--warn);border-radius:6px;font-size:.76rem;font-weight:600;line-height:1.5;border-left:3px solid var(--warn);"></div>
@@ -713,17 +713,17 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
           <div class="field-row">
             <label class="nf">
               <span class="nf-label">현황 국공유지 면적<span class="tip-icon" data-tip="사업구역 내 현재 국가 또는 지자체가 소유한 토지 면적입니다. 정비기반시설 순부담 계산 시 차감됩니다.">?</span></span>
-              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="publicLand" placeholder="0.0000" /><span class="nf-suffix">㎡</span></div>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="publicLand" /><span class="nf-suffix">㎡</span></div>
             </label>
             <label class="nf">
               <span class="nf-label">정비기반시설 설치면적<span class="tip-icon" data-tip="도로, 공원 등 사업으로 새로 설치·기부채납하는 정비기반시설의 전체 면적입니다.">?</span></span>
-              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="infraArea" placeholder="0.0000" /><span class="nf-suffix">㎡</span></div>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="infraArea" /><span class="nf-suffix">㎡</span></div>
             </label>
           </div>
           <div class="field-row">
             <label class="nf">
               <span class="nf-label">공동이용시설 설치면적<span class="tip-icon" data-tip="작은도서관, 주민공동시설 등 설치 시 추가 용적률 인센티브를 받는 공동이용시설의 면적입니다.">?</span></span>
-              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="communityArea" placeholder="0.0000" /><span class="nf-suffix">㎡</span></div>
+              <div class="nf-input-wrap"><input type="text" inputmode="decimal" id="communityArea" /><span class="nf-suffix">㎡</span></div>
             </label>
             <label class="nf">
               <span class="nf-label">세입자 손실보상액<span class="tip-icon" data-tip="영업·주거 세입자에게 지급하는 손실보상 총액입니다. 아래 손실보상 토지환산용 공시지가와 함께 토지면적으로 환산되어 임대주택 의무비율에서 차감됩니다.">?</span></span>
@@ -733,7 +733,7 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
           <div class="field-row">
             <label class="nf">
               <span class="nf-label">손실보상 토지환산용 공시지가<span class="tip-icon" data-tip="손실보상액을 토지면적으로 환산할 때 사용하는 공시지가입니다.&#10;환산면적 = 손실보상액 ÷ (이 값 × 2)&#10;보정계수 산정에 쓰이는 사업지 평균 공시지가와 다를 수 있으므로 반드시 별도 입력하세요.">?</span></span>
-              <div class="nf-input-wrap nf-accent"><input type="text" inputmode="decimal" id="compPrice" placeholder="예: 4,161,000" /><span class="nf-suffix">원/㎡</span></div>
+              <div class="nf-input-wrap nf-accent"><input type="text" inputmode="decimal" id="compPrice" /><span class="nf-suffix">원/㎡</span></div>
               <span class="nf-hint">보정계수 산정용 사업지 평균 공시지가와 별도 입력</span>
             </label>
             <div></div>
@@ -1391,9 +1391,9 @@ function renderKPI(calc) {
 function renderZoneTable() {
   const rows = zones.map(function(z){
     return '<tr data-id="' + z.id + '">' +
-      '<td><input type="text" class="cell-input w-name" data-field="name" data-id="' + z.id + '" value="' + (z.name||"") + '" placeholder="예: 제1종일반주거" /></td>' +
-      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="area" data-id="' + z.id + '" data-kind="area" value="' + (z.area === null || z.area === undefined ? "" : liveFormat(qA(z.area).toFixed(4))) + '" placeholder="0.0000" /></td>' +
-      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="farPct" data-id="' + z.id + '" value="' + liveFormat(z.farPct) + '" placeholder="예: 150" /></td>' +
+      '<td><input type="text" class="cell-input w-name" data-field="name" data-id="' + z.id + '" value="' + (z.name||"") + '" /></td>' +
+      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="area" data-id="' + z.id + '" data-kind="area" value="' + (z.area === null || z.area === undefined ? "" : liveFormat(qA(z.area).toFixed(4))) + '" /></td>' +
+      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="farPct" data-id="' + z.id + '" value="' + liveFormat(z.farPct) + '" /></td>' +
       '<td class="del-col"><button class="btn-del" data-id="' + z.id + '" title="삭제">×</button></td>' +
       '</tr>';
   }).join("");
@@ -1505,8 +1505,8 @@ function saleRowHTML(u, editable) {
   const deltaHTML = deltaBadge(u.linkedCount, u.baseCount);
   if (editable) {
     return '<tr data-id="' + u.id + '">' +
-      '<td><input type="text" class="cell-input w-name" data-field="name" data-id="' + u.id + '" value="' + (u.name||"") + '" placeholder="예: 59A" /></td>' +
-      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="area" data-id="' + u.id + '" data-kind="area" value="' + (u.area === null || u.area === undefined ? "" : liveFormat(qA(u.area).toFixed(4))) + '" placeholder="0.0000" /></td>' +
+      '<td><input type="text" class="cell-input w-name" data-field="name" data-id="' + u.id + '" value="' + (u.name||"") + '" /></td>' +
+      '<td><input type="text" inputmode="decimal" class="cell-input w-num" data-field="area" data-id="' + u.id + '" data-kind="area" value="' + (u.area === null || u.area === undefined ? "" : liveFormat(qA(u.area).toFixed(4))) + '" /></td>' +
       '<td><input type="text" inputmode="numeric" class="cell-input w-count" data-field="baseCount" data-id="' + u.id + '" value="' + liveFormat(u.baseCount) + '" /></td>' +
       '<td class="num linked-cell">' + fmtInt(u.linkedCount) + '</td>' +
       '<td class="num delta-cell">' + deltaHTML + '</td>' +
