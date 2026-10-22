@@ -599,7 +599,8 @@ table.dtable th.del-col, table.dtable td.del-col{ width:1.9rem; text-align:cente
           <span class="project-badge-dot"></span>
           <span id="projectBadgeName"></span> 로드됨
         </span>
-        <button class="json-btn" id="resetAllBtn" title="모든 입력값을 지우고 빈 상태로 새로 시작합니다">새로 작성</button>
+        <button class="json-btn" id="restoreBtn" style="display:none;" title="이 브라우저에 자동저장된 마지막 작업을 불러옵니다">이전 작업 복원</button>
+        <button class="json-btn" id="resetAllBtn" title="모든 입력값을 지우고 빈 상태로 되돌립니다">초기화</button>
         <button class="json-btn" id="jsonSaveBtn" title="현재 입력값 전체를 JSON 파일로 저장합니다">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-.15em;margin-right:.3rem;"><path d="M8 1v9M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>저장
         </button>
@@ -2175,7 +2176,7 @@ document.getElementById("seoulPriceYear").addEventListener("change", applySeoulP
 
 // ─── 새로 작성: 모든 입력값 초기화 ────────────────────────────────────────────
 function resetAll() {
-  if (!confirm("모든 입력값을 지우고 새로 작성할까요? (저장하지 않은 내용은 사라집니다)")) return;
+  if (!confirm("모든 입력값을 초기화할까요? (저장하지 않은 내용은 사라집니다)")) return;
   SIMPLE_FIELD_IDS.forEach(function(id){ document.getElementById(id).value = ""; });
   document.getElementById("seoulPriceYear").value = "custom";
   projectType = "redev";
@@ -2186,6 +2187,8 @@ function resetAll() {
   saleUnits = []; donationUnits = []; buyUnits = [];
   autoApplied = false;
   try { localStorage.removeItem(LS_KEY); } catch(e) { /* 무시 */ }
+  _savedAtStart = null;
+  document.getElementById("restoreBtn").style.display = "none";
   document.getElementById("projectBadge").style.display = "none";
   updateSeoulPriceSourceNote();
   renderAll();
@@ -2350,13 +2353,30 @@ renderAll = function(skipAutoSave) {
       _tryLoadLocalStorage();
     }
   } else {
-    // 2순위: localStorage 자동저장값
-    _tryLoadLocalStorage();
+    // 기본은 빈 상태로 시작 — 자동저장된 이전 작업은 [이전 작업 복원] 버튼으로만 불러옴
+    _offerRestore();
   }
 
   updateSeoulPriceSourceNote();
   renderAll(true); // 초기 렌더 (자동저장 트리거 없이)
 })();
+
+// 시작 시점의 자동저장값을 따로 보관 (빈 화면에서 입력을 시작해도 덮어써지지 않도록)
+var _savedAtStart; // initProject가 먼저 실행되므로 여기서 값을 대입하지 않음
+function _offerRestore() {
+  try { _savedAtStart = localStorage.getItem(LS_KEY); } catch(e) { _savedAtStart = null; }
+  document.getElementById("restoreBtn").style.display = _savedAtStart ? "flex" : "none";
+}
+document.getElementById("restoreBtn").addEventListener("click", function(){
+  if (!_savedAtStart) return;
+  try {
+    applyState(JSON.parse(_savedAtStart));
+    showToast("✓ 이전 작업 복원됨");
+  } catch(e) {
+    showToast("✕ 복원 실패: " + e.message, true);
+  }
+  this.style.display = "none";
+});
 
 function _tryLoadLocalStorage() {
   try {
