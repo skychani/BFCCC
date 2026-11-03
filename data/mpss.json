@@ -1,6 +1,6 @@
 {
   "version": "bfccc-v1",
-  "savedAt": "2026-10-06T02:16:32.413Z",
+  "savedAt": "2026-11-03T07:22:52.946Z",
   "projectType": "redev",
   "fields": {
     "seoulPrice": "6,302,982",
@@ -96,13 +96,13 @@
       "id": "d3",
       "typeId": "t3",
       "planCount": 24,
-      "count": 14
+      "count": 16
     },
     {
       "id": "d4",
       "typeId": "t4",
       "planCount": 24,
-      "count": 14
+      "count": 15
     },
     {
       "id": "d5",
