@@ -983,9 +983,8 @@ function calculate() {
   const incPct = (basePct !== null && hasTarget) ? qP(targetPct - basePct) : null;
   const incArea = (incPct !== null && hasSite) ? qA(qA(siteArea * targetPct / 100) - qA(siteArea * basePct / 100)) : null;
 
-  // ④ 기부형 임대 용적률 = 증가 용적률 × 0.5 ÷ 보정계수
+  // ④ 기부형 임대 용적률(차감 전) = 증가 용적률 × 0.5
   const donGrossBeforePct = incPct !== null ? qP(incPct * 0.5) : null;
-  const donGrossAfterPct = (incPct !== null && correctionFactor !== null) ? qP(incPct * 0.5 / correctionFactor) : null;
 
   // ⑤ 세입자 손실보상 용적률 = 기준용적률 × 0.7 × (환산면적 ÷ 대지면적)
   //    환산면적 = 손실보상액 ÷ (손실보상 토지환산용 공시지가 × 2)
@@ -996,9 +995,10 @@ function calculate() {
   const lossPct = noComp ? 0 : ((compRatio !== null && basePct !== null) ? qP(basePct * 0.7 * compRatio) : null);
   const lossArea = (lossPct !== null && hasSite) ? qA(siteArea * lossPct / 100) : null;
 
-  // ⑥ 기부형 임대 순용적률(손실보상 차감) · 일반분양 용적률 · 기부채납 의무면적
+  // ⑥ 기부형 임대 순용적률 = (증가 용적률 × 0.5 − 손실보상 용적률) ÷ 보정계수
+  //    손실보상을 먼저 차감한 뒤 보정계수를 적용한다. 보정 전 값은 ÷ 보정계수 생략
   const donNetBeforePct = (donGrossBeforePct !== null && lossPct !== null) ? Math.max(addP(donGrossBeforePct, -lossPct), 0) : null;
-  const donNetAfterPct = (donGrossAfterPct !== null && lossPct !== null) ? Math.max(addP(donGrossAfterPct, -lossPct), 0) : null;
+  const donNetAfterPct = (donNetBeforePct !== null && correctionFactor !== null) ? qP(donNetBeforePct / correctionFactor) : null;
   const saleBeforePct = donNetBeforePct !== null ? addP(incPct, -donNetBeforePct) : null;
   const saleAfterPct = donNetAfterPct !== null ? addP(incPct, -donNetAfterPct) : null;
   const donationAreaBefore = (donNetBeforePct !== null && hasSite) ? qA(siteArea * donNetBeforePct / 100) : null;
@@ -1065,7 +1065,7 @@ function calculate() {
     targetPct: hasTarget ? targetPct : null, basePct: basePct, incPct: incPct, incArea: incArea,
     hasPrices: hasPrices, seoulPrice: seoulPrice, sitePrice: sitePrice,
     rawRatio: rawRatio, correctionFactor: correctionFactor, isCapped: isCapped, isFloored: isFloored,
-    donGrossBeforePct: donGrossBeforePct, donGrossAfterPct: donGrossAfterPct,
+    donGrossBeforePct: donGrossBeforePct,
     compensationAmt: compensationAmt, compPrice: compPrice, hasCompPrice: hasCompPrice, noComp: noComp,
     compLandArea: compLandArea, compRatio: compRatio, lossPct: lossPct, lossArea: lossArea,
     donNetBeforePct: donNetBeforePct, donNetAfterPct: donNetAfterPct,
@@ -1156,7 +1156,7 @@ function renderFarStack(calc) {
       f: P(calc.targetPct) + " − " + P(calc.basePct),
       b: signP(calc.incPct), a: signP(calc.incPct), cum: P(cum2), bar: wf(cum1, calc.incPct, "#d97a3f") },
     { op:"", name:"└ 기부형 임대 (손실보상 차감)", cls:"far-row-sub",
-      f: has(calc.donGrossAfterPct, calc.lossPct) ? (P(calc.incPct) + " × 0.5 ÷ " + (cf !== null ? fmtNum(cf,2) : "CF") + " − " + P(calc.lossPct)) : "보정계수·손실보상 입력 필요",
+      f: has(calc.donNetAfterPct) ? ("(" + P(calc.incPct) + " × 0.5 − " + P(calc.lossPct) + ") ÷ " + fmtNum(cf,2)) : "보정계수·손실보상 입력 필요",
       b: P(calc.donNetBeforePct), a: P(calc.donNetAfterPct), cum: "", bar: "" },
     { op:"", name:"└ 일반분양", cls:"far-row-sub",
       f: has(calc.donNetAfterPct) ? (P(calc.incPct) + " − " + P(calc.donNetAfterPct)) : "",
@@ -1238,14 +1238,14 @@ function renderChain(calc) {
       P(calc.incPct),
       has(calc.incArea) ? "증가면적 " + A(calc.incArea) + " (대지면적 × 상향용적률 − 대지면적 × 기준용적률)" : null,
       false, null,
-      "용도지역 상향으로 늘어나는 용적률입니다. 이 중 절반을 보정계수로 나눈 만큼 기부형 임대주택으로 공급합니다."),
-    chainStepHTML("4","기부형 임대주택 용적률",
-      "증가 용적률 × 0.5 ÷ 사업성보정계수",
-      has(calc.donGrossAfterPct) ? (P(calc.incPct) + " × 0.5 ÷ " + fmtNum(cf,2) + " = " + P(calc.donGrossAfterPct)) : null,
-      P(calc.donGrossAfterPct),
-      has(calc.donGrossBeforePct) ? "보정 전 " + P(calc.incPct) + " × 0.5 = " + P(calc.donGrossBeforePct) : null,
+      "용도지역 상향으로 늘어나는 용적률입니다. 이 중 절반에서 손실보상 용적률을 차감한 뒤 보정계수로 나눈 만큼 기부형 임대주택으로 공급합니다."),
+    chainStepHTML("4","기부형 임대주택 용적률 (차감·보정 전)",
+      "증가 용적률 × 0.5",
+      has(calc.donGrossBeforePct) ? (P(calc.incPct) + " × 0.5 = " + P(calc.donGrossBeforePct)) : null,
+      P(calc.donGrossBeforePct),
+      null,
       false, null,
-      "보정계수가 클수록 기부형 임대주택 용적률이 줄어듭니다."),
+      "이 값에서 손실보상 용적률(⑤)을 먼저 차감한 뒤 사업성보정계수로 나눕니다(⑥)."),
     chainStepHTML("5","세입자 손실보상 용적률",
       "환산면적 = 손실보상액 ÷ (토지환산용 공시지가 × 2)  /  손실보상 용적률 = 기준용적률 × 0.7 × (환산면적 ÷ 대지면적)",
       calc.noComp ? "손실보상액 없음 → 0.00%"
@@ -1256,11 +1256,11 @@ function renderChain(calc) {
       calc.lossPct !== null ? P(calc.lossPct) : "손실보상 토지환산용 공시지가 입력 필요",
       has(calc.lossArea) ? "환산 용적률 면적 " + A(calc.lossArea) : null,
       false, null,
-      "세입자 손실보상액을 토지면적으로 환산한 만큼 기부형 임대주택 용적률에서 차감됩니다."),
+      "세입자 손실보상액을 토지면적으로 환산한 만큼 기부형 임대주택 용적률에서 보정계수 적용 전에 차감됩니다."),
     chainStepHTML("6","기부형 임대 순용적률 · 일반분양 · 의무면적",
-      "임대 = 기부형 임대 용적률 − 손실보상 용적률  /  분양 = 증가 용적률 − 임대  /  의무면적 = 대지면적 × 임대 순용적률",
+      "임대 = (기부형 임대 용적률 − 손실보상 용적률) ÷ 사업성보정계수  /  분양 = 증가 용적률 − 임대  /  의무면적 = 대지면적 × 임대 순용적률",
       has(calc.donNetAfterPct)
-        ? P(calc.donGrossAfterPct) + " − " + P(calc.lossPct) + " = " + P(calc.donNetAfterPct) +
+        ? "(" + P(calc.donGrossBeforePct) + " − " + P(calc.lossPct) + " = " + P(calc.donNetBeforePct) + ") ÷ " + fmtNum(cf,2) + " = " + P(calc.donNetAfterPct) +
           "  /  " + P(calc.incPct) + " − " + P(calc.donNetAfterPct) + " = " + P(calc.saleAfterPct) +
           "  /  " + fmtArea(calc.siteArea) + " × " + P(calc.donNetAfterPct) + " = " + A(calc.donationAreaAfter)
         : null,
@@ -1366,10 +1366,10 @@ function renderKPI(calc) {
     { label:"공동이용시설", value: calc.communityPct !== null ? "+" + fmtPctVal(calc.communityPct) : "—", cls:"",
       tip:"공동이용시설 설치면적 ÷ 대지면적" },
     { label:"세입자 손실보상 용적률", value: calc.lossPct !== null ? fmtPctVal(calc.lossPct) : "—", cls:"",
-      tip:"기준용적률 × 0.7 × (환산면적 ÷ 대지면적). 기부형 임대 용적률에서 차감됩니다." },
+      tip:"기준용적률 × 0.7 × (환산면적 ÷ 대지면적). 보정계수 적용 전 기부형 임대 용적률에서 차감됩니다." },
     { label:"기부형 임대 순용적률 (전 → 후)", value: (calc.donNetBeforePct !== null && calc.donNetAfterPct !== null)
         ? fmtPctVal(calc.donNetBeforePct) + " → " + fmtPctVal(calc.donNetAfterPct) : "—", cls:"",
-      tip:"증가 용적률 × 0.5 (÷ 보정계수) − 손실보상 용적률" },
+      tip:"(증가 용적률 × 0.5 − 손실보상 용적률) (÷ 보정계수)" },
     { label:"기부채납 의무면적 (보정 후)", value: calc.donationAreaAfter !== null ? fmtArea(calc.donationAreaAfter) + "㎡" : "—", cls:"",
       tip:"대지면적 × 기부형 임대 순용적률. 타입별 합산 면적이 이 값 이상이어야 합니다." },
     { label:"임대(기부형) 세대 증감", value: deltaText + "  (" + fmtInt(calc.donationPlanTotal) + " → " + fmtInt(calc.donationHouseholdsTotal) + ")", cls: deltaCls,
